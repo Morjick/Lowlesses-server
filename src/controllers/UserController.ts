@@ -1,28 +1,17 @@
-import { CreateUserInterface, UserModel } from '../models/UserSchema'
+import { CreateUserInterface, UserModel, UsersFriendsModel } from '../models/UserSchema'
 import { Controller, Param, Body, Get, Post, Put, Delete, JsonController } from 'routing-controllers'
-import bcrypt from 'bcrypt'
+import * as bcrypt from 'bcrypt'
 import 'reflect-metadata'
 import { IsValidPassword } from '../libs/isValidVassword'
-import jwt from 'jsonwebtoken'
+import * as jwt from 'jsonwebtoken'
 import { Model } from 'sequelize'
-import { config } from 'dotenv'
 import { secretKey } from '../data/DataBase'
+import { checkToken } from '../libs/checkAuth'
 
 
 
 @JsonController ('/user')
 export class UserController {
-  @Get('/get-all')
-  getAll() {
-    return {
-      status: 200,
-      message: 'пользователи найдены',
-      body: {
-        users: []
-      }
-    }
-  }
-
   @Post('/create-user')
   async createUser(@Body() body: CreateUserInterface) {
     if (!body.username?.length || !body.password?.length) {
@@ -30,6 +19,16 @@ export class UserController {
         status: 304,
         message: 'Пожалуйста, заполните все поля',
         error: 'Пожалуйста, заполните все поля'
+      }
+    }
+
+    const isUsernameExists = await UserModel.findOne({ where: { username: body.username } })
+
+    if (isUsernameExists?.dataValues?.id) {
+      return {
+        status: 409,
+        message: 'Персонаж с таким именем уже существует',
+        error: 'Персонаж с таким именем уже существует'
       }
     }
 
@@ -52,6 +51,10 @@ export class UserController {
       password: String(hashPassword)
     })
 
+    const friendList = await UsersFriendsModel.create({ userId: user.dataValues.id })
+
+    UserModel.update({ friendsListId: user.dataValues.id }, { where: { id: user.dataValues.id } })
+
 
     const token: Model = await jwt.sign(
       {
@@ -65,8 +68,11 @@ export class UserController {
     )
 
     return {
-      token,
-      user: user.dataValues,
+      body: {
+        token,
+        user: user.dataValues,
+        friendList,
+      },
       status: 200,
       message: 'Пользователь создан'
     }
@@ -114,5 +120,23 @@ export class UserController {
       },
       status: 200,
     }
+  }
+
+  @Post('/check-token')
+  async checkToken(@Body() body) {
+    const { token } = body
+    const { user } = await checkToken(token)
+
+    return {
+      message: 'Авторизация подтверждена',
+      ok: true,
+      body: {
+        user
+      }
+    }
+  }
+
+  async setOnlinestatus (id, isOnlien) {
+    await UserModel.update({ isOnlien }, { where: { id } })
   }
 }

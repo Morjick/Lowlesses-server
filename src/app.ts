@@ -1,22 +1,24 @@
-import express, { RequestHandler } from "express";
-import http from "http";
-import dotenv from "dotenv";
-import cors from "cors";
-import { Server } from "socket.io";
-import { createExpressServer } from "routing-controllers";
-import { UserController } from "./controllers/UserController";
-import { GlobalResponseInterceptor } from "./interceptors/GlobalResponseInterceptor";
-import { SocketControllers } from "socket-controllers";
-import { OnlineController } from "./controllers/OnlineController";
-import { Container } from "typedi";
-import { connectToDataBase } from "./data/DataBase";
+import express, { RequestHandler } from "express"
+import http from "http"
+import dotenv from "dotenv"
+import cors from "cors"
+import { Server } from "socket.io"
+import { createExpressServer } from "routing-controllers"
+import { UserController } from "./controllers/UserController"
+import { GlobalResponseInterceptor } from "./interceptors/GlobalResponseInterceptor"
+import { SocketControllers } from "socket-controllers"
+import { OnlineController } from "./controllers/OnlineController"
+import { Container } from "typedi"
+import { connectToDataBase } from "./data/DataBase"
 import bodyParser from 'body-parser'
+import { RoomsController } from "./controllers/RoomsController"
+import { SocketAuthMiddleware } from "./middleware/AuthMiddleware"
 
 const init = async () => {
-  dotenv.config();
+  // dotenv.config()
 
-  const port = process.env.PORT;
-  const socetPort = Number(process.env.SOCKET_PORT);
+  const port = process.env.PORT
+  const socetPort = Number(process.env.SOCKET_PORT)
 
   await connectToDataBase({
     HOST: process.env.DB_HOST,
@@ -24,7 +26,7 @@ const init = async () => {
     PASWORD: process.env.DB_PASSWORD,
     DB: process.env.DB_NAME,
     PORT: process.env.DB_PORT,
-  });
+  })
 
   const app = createExpressServer({
     controllers: [UserController],
@@ -36,28 +38,18 @@ const init = async () => {
       credentials:true,
       optionsSuccessStatus: 200
     }
-  });
+  })
 
   new SocketControllers({
     port: socetPort,
-    controllers: [OnlineController],
+    controllers: [OnlineController, RoomsController],
     container: Container,
-  });
-  const server = http.createServer(app);
-  const io = new Server(server);
+  })
 
-  let onlineUsersCount = 0;
 
-  io.on("connection", (socket) => {
-    onlineUsersCount++;
-    console.log(`hi, online ${onlineUsersCount}`);
-    socket.emit(`hi, online ${onlineUsersCount}`);
-  });
-
-  // io.listen(Number(socetPort))
   app.listen(port, () => {
-    console.log(`Running on port ${port}`);
-  });
-};
+    console.log(`Running on port ${port}`)
+  })
+}
 
-init();
+init()

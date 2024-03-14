@@ -1,6 +1,7 @@
-import { Sequelize } from "sequelize"
+import { Sequelize } from "sequelize-typescript"
 import { config } from 'dotenv'
-import { UserModel } from "../models/UserSchema"
+import { UserModel, UsersFriendsModel } from "../models/UserSchema"
+import { FriendRelatedModel } from "../models/FriendRelatedModel"
 
 config()
 
@@ -39,20 +40,18 @@ const connectToDataBase = async (data: DataBaseConstructorInterface) => {
       acquire: dataBaseConfig.pool.acquire,
       idle: dataBaseConfig.pool.idle
     },
-    sync: {
-      alter: true,
-      force: true,
-    },
     logging: false,
     port: Number(data.PORT),
+    models: [UserModel, UsersFriendsModel, FriendRelatedModel],
   })
 
 
   try {
     database.authenticate()
-    await database.sync({ force: true, alter: true, }).then(() => {})
+    database.sync({ alter: true })
   } catch(e) {
     console.error('Ошибка при подключении к базе данных', e)
+    throw new Error(e)
   }
 
   return {
