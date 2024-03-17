@@ -23,7 +23,7 @@ export class UserModel extends Model {
   })
   id: number
 
-  @Column({ type: DataType.STRING })
+  @Column({ type: DataType.STRING, unique: true })
   username: string
 
   @Column({ type: DataType.STRING })

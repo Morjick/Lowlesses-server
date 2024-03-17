@@ -1,8 +1,3 @@
-import express, { RequestHandler } from "express"
-import http from "http"
-import dotenv from "dotenv"
-import cors from "cors"
-import { Server } from "socket.io"
 import { createExpressServer } from "routing-controllers"
 import { UserController } from "./controllers/UserController"
 import { GlobalResponseInterceptor } from "./interceptors/GlobalResponseInterceptor"
@@ -10,13 +5,9 @@ import { SocketControllers } from "socket-controllers"
 import { OnlineController } from "./controllers/OnlineController"
 import { Container } from "typedi"
 import { connectToDataBase } from "./data/DataBase"
-import bodyParser from 'body-parser'
-import { RoomsController } from "./controllers/RoomsController"
-import { SocketAuthMiddleware } from "./middleware/AuthMiddleware"
+import { ShopController } from "./controllers/ShopController"
 
 const init = async () => {
-  // dotenv.config()
-
   const port = process.env.PORT
   const socetPort = Number(process.env.SOCKET_PORT)
 
@@ -29,7 +20,7 @@ const init = async () => {
   })
 
   const app = createExpressServer({
-    controllers: [UserController],
+    controllers: [UserController, ShopController],
     interceptors: [GlobalResponseInterceptor],
     cors: {
       methods:"GET,HEAD,PUT,PATCH,POST,DELETE",
@@ -42,13 +33,13 @@ const init = async () => {
 
   new SocketControllers({
     port: socetPort,
-    controllers: [OnlineController, RoomsController],
+    controllers: [OnlineController],
     container: Container,
   })
 
 
   app.listen(port, () => {
-    console.log(`Running on port ${port}`)
+    console.log(`Приложение запущенно на порту ${port}`)
   })
 }
 

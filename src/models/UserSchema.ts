@@ -29,6 +29,7 @@ interface OpenUserDataInterface {
   friendsListId: number
   friends: FriendOpenDataInterface[]
   isAuth: boolean
+  role: UserRoleType
 }
 
 export {

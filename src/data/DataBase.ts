@@ -1,9 +1,11 @@
 import { Sequelize } from "sequelize-typescript"
-import { config } from 'dotenv'
 import { UserModel, UsersFriendsModel } from "../models/UserSchema"
 import { FriendRelatedModel } from "../models/FriendRelatedModel"
+import { EquipmentModel } from "../models/EquipmentModel"
+import { CreateRootUser } from "./scripts/CreateRootUser"
+import { BaffsModel } from "../models/BaffsModel"
 
-config()
+require('dotenv').config()
 
 interface DataBaseConstructorInterface {
   HOST: string | number
@@ -42,12 +44,13 @@ const connectToDataBase = async (data: DataBaseConstructorInterface) => {
     },
     logging: false,
     port: Number(data.PORT),
-    models: [UserModel, UsersFriendsModel, FriendRelatedModel],
+    models: [UserModel, UsersFriendsModel, FriendRelatedModel, EquipmentModel, BaffsModel],
   })
 
 
   try {
     database.authenticate()
+    await CreateRootUser()
     database.sync({ alter: true })
   } catch(e) {
     console.error('Ошибка при подключении к базе данных', e)

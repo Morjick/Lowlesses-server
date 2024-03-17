@@ -27,7 +27,7 @@ export class OnlineController {
       socket.handshake.user = user
       socket.handshake.user.isAuth = true
     } catch(e) {
-
+      console.log(e)
     }
   }
 

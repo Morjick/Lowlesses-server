@@ -11,6 +11,12 @@ interface ContentInterface {
 @Interceptor()
 export class GlobalResponseInterceptor implements InterceptorInterface {
   intercept(action: Action, content: ContentInterface) {
+    if (!content?.status) {
+      return {
+        status: 501,
+        message: 'Неожиданная ошибка сервера, попробуйте позже'
+      }
+    }
 
       const customResponse = {
         status: content.status || 501,
