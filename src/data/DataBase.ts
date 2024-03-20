@@ -50,8 +50,8 @@ const connectToDataBase = async (data: DataBaseConstructorInterface) => {
 
   try {
     database.authenticate()
+    database.sync({ alter: true, })
     await CreateRootUser()
-    database.sync({ alter: true })
   } catch(e) {
     console.error('Ошибка при подключении к базе данных', e)
     throw new Error(e)

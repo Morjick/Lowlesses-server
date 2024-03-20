@@ -1,6 +1,7 @@
 import * as bcrypt from 'bcrypt'
 import { UserModel } from '../../models/UserModel'
 import { UsersFriendsModel } from '../../models/UserFriendsModel'
+import { createRandomString } from '../../libs/createRandomString'
 
 require('dotenv').config()
 
@@ -11,10 +12,13 @@ export const CreateRootUser = async () => {
 
   if (isUserExists?.dataValues) return
 
+  const hash = await createRandomString()
+
   const user = await UserModel.create({
     username: process.env.ROOT_NAME,
     password: String(hashPassword),
-    role: 'ROOT'
+    role: 'ROOT',
+    userHash: hash
   })
 
   await UsersFriendsModel.create({ userId: user.dataValues.id })

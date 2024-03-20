@@ -53,4 +53,19 @@ export class UserModel extends Model {
 
   @BelongsTo(() => UsersFriendsModel)
   friendList: UsersFriendsModel
+
+  @Column({ type: DataType.STRING })
+  userHash: string
+
+  @Column({ type: DataType.STRING })
+  invitedHash: string
+
+  @Column({ type: DataType.BOOLEAN, defaultValue: false })
+  isReferalGiftReceived: boolean
+
+  @Column({ type: DataType.BOOLEAN, defaultValue: false })
+  isVIPStatus: boolean
+
+  @Column({ type: DataType.DATE })
+  endVIPDate: string
 }

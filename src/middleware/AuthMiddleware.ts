@@ -1,23 +1,17 @@
-import { MiddlewareInterface, Middleware } from "socket-controllers"
-import { Socket } from "socket.io"
-import { Service } from "typedi"
+import { checkToken } from "../libs/checkAuth"
 
+export const AuthMiddleware = async (request: any, response: any, next?: (err?: any) => any) => {
+  const token = request.headers.authorization
 
-// ! NOT WORKING
-@Service('SocketAuthMiddleware')
-@Middleware({ namespace: 'SocketAuthMiddleware' })
-export class SocketAuthMiddleware implements MiddlewareInterface {
+  const { user } = await checkToken(token)
 
-  use(socket: Socket, next: Function): void {
-    console.log('user socket: ', socket)
-    // const token = <string>socket.request.headers['x-api-token']
-
-    // if(!token?.length) {
-    //     console.error('Пользователь отключён, так как не прошёл проверку авторизации')
-    //     next(new Error('Не далось авторизоваться'))
-    // }
-    // console.log('Пользователь подключен')
-
-    next()
+  if (!user?.role) return {
+    ok: false,
+    status: 401,
+    message: "Для выполнения необходимо авторизоваться",
+    error: "Для выполнения необходимо авторизоваться",
   }
+
+  request.user = user
+  next()
 }

@@ -1,5 +1,5 @@
-import { CreateUserInterface, UserModel, UsersFriendsModel } from '../models/UserSchema'
-import { Controller, Param, Body, Get, Post, Put, Delete, JsonController } from 'routing-controllers'
+import { CreateUserInterface, SetUserInvitedHashInterface, UserModel, UsersFriendsModel } from '../models/UserSchema'
+import { Body, Post, JsonController, UseBefore, Req } from 'routing-controllers'
 import * as bcrypt from 'bcrypt'
 import 'reflect-metadata'
 import { IsValidPassword } from '../libs/isValidVassword'
@@ -7,6 +7,8 @@ import * as jwt from 'jsonwebtoken'
 import { Model } from 'sequelize'
 import { secretKey } from '../data/DataBase'
 import { checkToken } from '../libs/checkAuth'
+import { createRandomString } from '../libs/createRandomString'
+import { AuthMiddleware } from '../middleware/AuthMiddleware'
 
 
 
@@ -45,10 +47,12 @@ export class UserController {
     }
 
     const hashPassword = await bcrypt.hash(body.password, 10)
+    const userHash = await createRandomString()
 
     const user = await UserModel.create({
       username: body.username,
-      password: String(hashPassword)
+      password: String(hashPassword),
+      userHash,
     })
 
     const friendList = await UsersFriendsModel.create({ userId: user.dataValues.id })
@@ -133,6 +137,55 @@ export class UserController {
       body: {
         user
       }
+    }
+  }
+
+  @Post('/set-user-hash')
+  @UseBefore(AuthMiddleware)
+  async setUserInvatedHash(@Body() body: SetUserInvitedHashInterface, @Req() request) {
+    const VIPGiftDays = 7
+
+    const user = request.user
+    const { invitedHash } = body
+
+    const dateEnd = new Date()
+    dateEnd.setDate(dateEnd.getDate() + VIPGiftDays)
+
+    if (user.invitedHash?.length) {
+      return {
+        status: 402,
+        message: 'У вас уже установлен реферальный код',
+        error: 'У вас уже установлен реферальный код',
+      }
+    }
+
+    const referal = await UserModel.findOne({ where: { userHash: invitedHash } })
+    
+    if (!referal) {
+      return {
+        status: 404,
+        message: 'Пользователь с таким реферальным кодом не найден',
+        error: 'Пользователь с таким реферальным кодом не найден',
+      }
+    }
+
+    let referalVIPDateEnd = null
+
+    if (referal.dataValues.endVIPDate) {
+      referalVIPDateEnd = new Date(referal.dataValues.endVIPDate)
+    } else {
+      referalVIPDateEnd = new Date()
+    }
+
+    referalVIPDateEnd.setDate(dateEnd.getDate() + VIPGiftDays)
+
+    await UserModel.update({ invitedHash, endVIPDate: dateEnd }, { where: { id: user.id } })
+    await UserModel.update({ endVIPDate: referalVIPDateEnd, isVIPStatus: true }, { where: { id: referal.dataValues.id } })
+
+    return {
+      ok: true,
+      status: 200,
+      message: 'Реферальный код указан'
     }
   }
 

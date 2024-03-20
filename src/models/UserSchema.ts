@@ -32,9 +32,14 @@ interface OpenUserDataInterface {
   role: UserRoleType
 }
 
+interface SetUserInvitedHashInterface {
+  invitedHash: string
+}
+
 export {
   UserModel,
   UsersFriendsModel,
   type OpenUserDataInterface,
   type CreateUserInterface,
+  type SetUserInvitedHashInterface,
 } 
