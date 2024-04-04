@@ -9,9 +9,31 @@ import {
   HasMany,
 } from 'sequelize-typescript'
 import { UsersFriendsModel } from "./UserFriendsModel"
-import { FriendRelatedModel } from "./FriendRelatedModel"
+import { OpenUserDataInterface } from "./UserSchema"
+import { CoordsInterface } from "src/data/GameMaps"
+import { GameClassInterface, PlayerClassType } from "src/data/game-classes/GameClass"
 
 export type UserRoleType = 'USER' | 'ADMIN' | 'ROOT'
+export type PlayerStatusTpye = 'online' | 'ofline'
+export type PlayerAnimationType = 'run' | 'idle' | 'attack' | 'jump'
+export type PlayerComandType = 'blue' | 'red' | 'any'
+
+export interface PlayerPositionInterface {
+  coords: CoordsInterface
+  isFlipX: boolean
+}
+
+export interface PlayerInterface {
+  user: OpenUserDataInterface
+  class?: GameClassInterface
+  kills: number
+  dies: number
+  // status: GameClassInterface
+  isAlive: boolean
+  position?: PlayerPositionInterface
+  animation?: PlayerAnimationType
+  command: PlayerComandType
+}
 
 @Table
 export class UserModel extends Model {

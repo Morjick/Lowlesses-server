@@ -10,8 +10,6 @@ import { checkToken } from '../libs/checkAuth'
 import { createRandomString } from '../libs/createRandomString'
 import { AuthMiddleware } from '../middleware/AuthMiddleware'
 
-
-
 @JsonController ('/user')
 export class UserController {
   @Post('/create-user')
