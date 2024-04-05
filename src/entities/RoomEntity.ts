@@ -1,10 +1,10 @@
 import { OpenUserDataInterface } from "../models/UserSchema"
 import { ConnectedUserInterfaceType } from "../controllers/OnlineController"
-import { GameClassInterface, PlayerClassType } from "../data/game-classes/GameClass"
-import { GameMapInterface, getRandomMap, getRandomRespawn } from "../data/GameMaps"
+import { GameClassInterface } from "../data/game-classes/GameClass"
+import { GameMapInterface, getRandomMap } from "../data/GameMaps"
 import { createRandomString } from "../libs/createRandomString"
 import { PlayerAnimationType, PlayerComandType, PlayerInterface, PlayerPositionInterface } from "../models/UserModel"
-import { createRandomNumber } from "../libs/createRandomNumber"
+import { RoomPlayerEnity } from "./RoomPlayerEnity"
 
 export interface RoomEntityCreateData {
   hash: string
@@ -49,9 +49,14 @@ export interface JoinToRoomUserParamInterface {
   user: OpenUserDataInterface
 }
 
+export interface PlayerMoveInterface {
+  playerId: number
+  position: PlayerPositionInterface
+}
+
 export class RommEntity {
   public hash = null
-  public players: GameRoomPlayerInterface[] = []
+  public players: RoomPlayerEnity[] = []
   public gameMode: GameModeInterface = null
   public gameStart: string = ''
   public gameTime: number = 5
@@ -64,7 +69,6 @@ export class RommEntity {
   public gameSocket: any = null
   public maxPlayersCount = 10
   public isGameEnd = false
-  public roomUID: string = null
 
   private decrementTimeFunctionHash = null
   private minPlayerCount = 2
@@ -101,14 +105,12 @@ export class RommEntity {
     this.addNotification(notification)
 
     const playerComand = this.getPlayerComand()
-    const gameRoomPlayer: GameRoomPlayerInterface = {
-      ...player,
+    const gameRoomPlayer: RoomPlayerEnity = new RoomPlayerEnity({
       socket: userSocket,
       command: playerComand,
-      kills: 0,
-      dies: 0,
-      isAlive: false
-    }
+      user: player.user,
+      gameMap: this.gameMap
+    })
     this.players.push(gameRoomPlayer)
 
     gameRoomPlayer.socket.emit('join-to-room', {
@@ -132,7 +134,7 @@ export class RommEntity {
 
     if (!this.players[playerIndex] || !this.players[playerIndex].user?.id) return
 
-    this.players[playerIndex].class = gameClass
+    this.players[playerIndex].changeClass(gameClass)
 
     if (this.gameStatus === 'preparation') {
       this.gameSocket.emit('update-players-class', { players: this.players.map((player) => {
@@ -179,28 +181,18 @@ export class RommEntity {
       gameTime: this.gameTime
     })
 
-    this.respawn(player)
+    this.onRespawn(playerId)
   }
 
   redirectPlayer (player: GameRoomPlayerInterface, gameInterface: ConnectedUserInterfaceType) {
     player.socket.emit('redirect', gameInterface)
   }
 
-  respawn (player: PlayerInterface) {
-    const gameRoomPlayerId = this.players.findIndex(el => el.user.id === player.user.id)
-    const respanw = getRandomRespawn({ gameMap: this.gameMap, comand: player.command })
+  onRespawn (playerId: number) {
+    this.players
+      .find((connectedPlayer) => connectedPlayer.user.id === playerId)
+      .respawn()
 
-    this.players[gameRoomPlayerId].position = respanw
-    this.updatePlayersState()
-  }
-
-  onRespawn (onPlayerRespawnData: OnPlayerRespawnInterface) {
-    const playerIndex = this.players.findIndex((gamePlayer) => gamePlayer.user.id === onPlayerRespawnData.playerId)
-
-    const playerPosition = getRandomRespawn({ gameMap: this.gameMap, comand: this.players[playerIndex].command })
-
-    this.players[playerIndex].position = playerPosition
-    this.players[playerIndex].class = onPlayerRespawnData.gameClass
     this.updatePlayersState()
   }
 
@@ -209,16 +201,29 @@ export class RommEntity {
   }
 
   updatePlayersState () {
-    this.gameSocket.emit('update-position', this.players)
+    this.gameSocket.emit('update-position', {
+      players: this.players.map((player) => {  return { ...player, socket: null }}),
+      teamsCount: {
+        blue: this.blueTeamPoints,
+        red: this.blueTeamPoints,
+      },
+    })
   }
 
   onPlayerMoving (data: OnPlayerMovingInterface) {
-    const playerIndex = this.players.findIndex((gamePlayer) => gamePlayer.user.id === data.playerId)
+    if (this.gameStatus !== 'in-progress') return
 
-    this.players[playerIndex].position = data.position
-    this.players[playerIndex].animation = data.animation
+    this.players
+      .find((gamePlayer) => gamePlayer.user.id === data.playerId)
+      .move({ position: data.position, animation: data.animation })
 
     this.updatePlayersState()
+  }
+
+  onPlayerTakeDamage (data: OnPlayerTakeDamageInterface) {
+    const playerIndex: number = this.players.findIndex((connectPlayer) => connectPlayer.user.id === data.playerId)
+
+    this.players[playerIndex].class.hp = this.players[playerIndex].class.hp - data.damage
   }
 
   startGame () {
@@ -285,11 +290,5 @@ export class RommEntity {
       player.socket.join('main-menu')
       player.socket.handshake.roomHash = 'main-menu'
     })
-  }
-
-  onPlayerTakeDamage (data: OnPlayerTakeDamageInterface) {
-    const playerIndex: number = this.players.findIndex((connectPlayer) => connectPlayer.user.id === data.playerId)
-
-    // this.players[playerIndex].
   }
 }
