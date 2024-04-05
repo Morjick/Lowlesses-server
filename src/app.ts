@@ -6,6 +6,7 @@ import { OnlineController } from "./controllers/OnlineController"
 import { Container } from "typedi"
 import { connectToDataBase } from "./data/DataBase"
 import { ShopController } from "./controllers/ShopController"
+import { HeroesController } from "./controllers/HeroesController"
 
 const init = async () => {
   const port = process.env.PORT
@@ -33,7 +34,7 @@ const init = async () => {
 
   new SocketControllers({
     port: socetPort,
-    controllers: [OnlineController],
+    controllers: [OnlineController, HeroesController],
     container: Container,
   })
 

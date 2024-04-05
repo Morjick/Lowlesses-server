@@ -10,8 +10,8 @@ import {
 } from 'sequelize-typescript'
 import { UsersFriendsModel } from "./UserFriendsModel"
 import { OpenUserDataInterface } from "./UserSchema"
-import { CoordsInterface } from "src/data/GameMaps"
-import { GameClassInterface, PlayerClassType } from "src/data/game-classes/GameClass"
+import { CoordsInterface } from "../data/GameMaps"
+import { GameClassInterface, GameClasses, PlayerClassType } from "../data/game-classes/GameClass"
 
 export type UserRoleType = 'USER' | 'ADMIN' | 'ROOT'
 export type PlayerStatusTpye = 'online' | 'ofline'
@@ -28,11 +28,14 @@ export interface PlayerInterface {
   class?: GameClassInterface
   kills: number
   dies: number
-  // status: GameClassInterface
   isAlive: boolean
   position?: PlayerPositionInterface
   animation?: PlayerAnimationType
   command: PlayerComandType
+}
+
+export const userGameClassData = {
+  classes: []
 }
 
 @Table
@@ -51,7 +54,7 @@ export class UserModel extends Model {
   @Column({ type: DataType.STRING })
   password: string
 
-  @Column({ type: DataType.INTEGER, defaultValue: 0 })
+  @Column({ type: DataType.INTEGER, defaultValue: 1000 })
   money: number
 
   @Column({ type: DataType.INTEGER, defaultValue: 0 })
@@ -90,4 +93,7 @@ export class UserModel extends Model {
 
   @Column({ type: DataType.DATE })
   endVIPDate: string
+
+  @Column({ type: DataType.JSON, defaultValue: JSON.stringify(userGameClassData) })
+  userLockedData: string
 }

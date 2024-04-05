@@ -15,7 +15,10 @@ export class UserEntity {
   }
 
   async disconnect () {
-    await UserModel.update({ isOnline: false }, { where: { id: this.id } })
+    await UserModel.update({
+      isOnline: false,
+      userLockedData: JSON.stringify(this.details.userLockedData),
+    }, { where: { id: this.id } })
   }
 
 }

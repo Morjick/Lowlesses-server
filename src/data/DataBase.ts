@@ -4,6 +4,10 @@ import { FriendRelatedModel } from "../models/FriendRelatedModel"
 import { EquipmentModel } from "../models/EquipmentModel"
 import { CreateRootUser } from "./scripts/CreateRootUser"
 import { BaffsModel } from "../models/BaffsModel"
+import { GameSkillModel } from "../models/GameSkillModel"
+import { GameClassModel } from "../models/GameClassModel"
+import { createGameShop } from "./migrations/createGameClassesForShop"
+import { getGameClassesFromDB } from "./game-classes/GameClass"
 
 require('dotenv').config()
 
@@ -44,7 +48,7 @@ const connectToDataBase = async (data: DataBaseConstructorInterface) => {
     },
     logging: false,
     port: Number(data.PORT),
-    models: [UserModel, UsersFriendsModel, FriendRelatedModel, EquipmentModel, BaffsModel],
+    models: [UserModel, UsersFriendsModel, FriendRelatedModel, EquipmentModel, BaffsModel, GameSkillModel, GameClassModel],
   })
 
 
@@ -52,6 +56,8 @@ const connectToDataBase = async (data: DataBaseConstructorInterface) => {
     database.authenticate()
     database.sync({ alter: true, })
     await CreateRootUser()
+    await getGameClassesFromDB()
+    // await createGameShop()
   } catch(e) {
     console.error('Ошибка при подключении к базе данных', e)
     throw new Error(e)

@@ -6,7 +6,6 @@ import { UserEntity } from '../entities/UserEntity';
 import { OpenUserDataInterface } from '../models/UserSchema';
 import { GameModeInterface, JoinToRoomUserParamInterface, RommEntity } from '../entities/RoomEntity';
 import { createRandomString } from '../libs/createRandomString';
-import { PlayerInterface } from '../models/UserModel';
 import {
   SocketController,
   OnMessage,
@@ -86,10 +85,8 @@ export class OnlineController {
 
   @OnDisconnect()
   async disconnect(@ConnectedSocket() socket) {
-    const userToken = getTokenSromSocket(socket)
-    if (!userToken) return
+    const user = socket.handshake.user
 
-    const { user } = await checkToken(userToken)
     const userEntity = new UserEntity({ id: user.id, details: user })
     await userEntity.disconnect()
     this.connectedUsers = this.connectedUsers.filter((el) => el.id === user.id)

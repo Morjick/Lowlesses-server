@@ -8,9 +8,18 @@ export const ArcherClassSkills: GameClassSkillInterface[] = [
     isMassive: true,
     skillLevel: 0,
     isHaveEffect: true,
-    effect: (gameData: GameSkillEffectParamsInterface) => {
-      
-    }
+    effect: (gameData: GameSkillEffectParamsInterface) => {},
+    skillPrice: 500
+  },
+  {
+    name: 'Toxic Fog',
+    damage: 150,
+    cooldown: 30,
+    isMassive: true,
+    skillLevel: 0,
+    isHaveEffect: true,
+    effect: (gameData: GameSkillEffectParamsInterface) => {},
+    skillPrice: 1000
   }
 ]
 
@@ -19,5 +28,6 @@ export const ArcherClass: GameClassInterface = {
   hp: 1000,
   speed: 5,
   attackPower: 40,
-  skills: ArcherClassSkills
+  skills: ArcherClassSkills,
+  classPrice: 800
 }

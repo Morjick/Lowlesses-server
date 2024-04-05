@@ -2,6 +2,7 @@
 import * as jwt from 'jsonwebtoken'
 import { OpenUserDataInterface, UserModel, UsersFriendsModel } from '../models/UserSchema';
 import { FriendRelatedModel } from '../models/FriendRelatedModel';
+import { getGamseClassesFromUser } from '../data/game-classes/GameClass';
 require('dotenv').config()
 
 interface ResponseCheckAuthInterface {
@@ -68,13 +69,18 @@ export const checkToken = async (token: string, isOnline = true): Promise<Respon
     const userOpenData = {
       ...user.dataValues,
       friends: user.dataValues.friendList?.dataValues
-      ? user.dataValues.friendList.dataValues.friends.map((el) => el.dataValues.user.dataValues)
-      : [],
+        ? user.dataValues.friendList.dataValues.friends.map((el) => el.dataValues.user.dataValues)
+        : [],
+      userLockedData: JSON.parse(user.dataValues.userLockedData)
     }
 
     if (!userOpenData.friends.friendsId) {
       userOpenData.friends.friendsId = []
     }
+
+    const classes = getGamseClassesFromUser(userOpenData)
+    userOpenData.classes = classes
+    userOpenData.userLockedData.classes = classes
 
     return {
       message: 'Авторизация подтверждена',

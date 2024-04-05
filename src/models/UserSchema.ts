@@ -1,5 +1,6 @@
 import { UserModel, UserRoleType } from "./UserModel"
 import { UsersFriendsModel } from "./UserFriendsModel"
+import { GameClassInterface } from "../data/game-classes/GameClass"
 
 interface CreateUserInterface {
   username: string
@@ -21,6 +22,10 @@ interface FriendOpenDataInterface {
   role: UserRoleType
 }
 
+interface UserLockedDataInterface {
+  classes: GameClassInterface[]
+}
+
 interface OpenUserDataInterface {
   id: number
   username: string
@@ -30,6 +35,9 @@ interface OpenUserDataInterface {
   friends: FriendOpenDataInterface[]
   isAuth: boolean
   role: UserRoleType
+  userLockedData: UserLockedDataInterface
+  classes: GameClassInterface
+  money: number
 }
 
 interface SetUserInvitedHashInterface {
@@ -42,4 +50,5 @@ export {
   type OpenUserDataInterface,
   type CreateUserInterface,
   type SetUserInvitedHashInterface,
+  type UserLockedDataInterface,
 } 
