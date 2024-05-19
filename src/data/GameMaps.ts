@@ -20,11 +20,17 @@ export interface ComandRespansInterface {
   any?: RespawnInterface[]
 }
 
+export interface GameMapBorders {
+  leftTop: CoordsInterface
+  rightBottom: CoordsInterface
+}
+
 export interface GameMapInterface {
   gameMods: GameModeInterface[]
   mapName: string
   maxPlayersCount: number
   comandRespawns: ComandRespansInterface
+  borders: GameMapBorders
 }
 
 export interface CreateRandomMapParamInterface {
@@ -70,6 +76,20 @@ export const LavaCastleMap: GameMapInterface = {
         coords: { x: -200, y: -200 },
       },
     ],
+  },
+  borders: {
+    leftTop: {
+      x: 0,
+      y: 0,
+      z: 0,
+      offsetZPosition: 5
+    },
+    rightBottom: {
+      x: 100,
+      y: 100,
+      z: 100,
+      offsetZPosition: 5
+    },
   }
 }
 
@@ -132,6 +152,20 @@ export const AbandonedCastleMap: GameMapInterface = {
         coords: { x: -200, y: -200 },
       },
     ]
+  },
+  borders: {
+    leftTop: {
+      x: 0,
+      y: 0,
+      z: 0,
+      offsetZPosition: 5
+    },
+    rightBottom: {
+      x: 100,
+      y: 100,
+      z: 100,
+      offsetZPosition: 5
+    },
   }
 }
 
@@ -194,6 +228,20 @@ export const DarkCastleMap: GameMapInterface = {
         coords: { x: -200, y: -200 },
       },
     ]
+  },
+  borders: {
+    leftTop: {
+      x: 0,
+      y: 0,
+      z: 0,
+      offsetZPosition: 5
+    },
+    rightBottom: {
+      x: 100,
+      y: 100,
+      z: 100,
+      offsetZPosition: 5
+    },
   }
 }
 

@@ -2,6 +2,7 @@ import { OpenUserDataInterface } from "../models/UserSchema"
 import { PlayerAnimationType, PlayerComandType, PlayerPositionInterface } from "../models/UserModel"
 import { GameClassInterface } from "../data/game-classes/GameClass"
 import { GameMapInterface, getRandomRespawn } from "../data/GameMaps"
+import { EventEmitter } from 'events'
 
 export interface CreateRoomPlayerEntityInterface {
   socket: any
@@ -35,6 +36,7 @@ export class RoomPlayerEnity {
   private respawnTimeoutFunction = null
 
   private readonly respawnForMonyPrice = 10
+  public emitter = null
 
   constructor (createData: CreateRoomPlayerEntityInterface) {
     this.socket = createData.socket
@@ -43,9 +45,10 @@ export class RoomPlayerEnity {
     this.dies = 0
     this.user = createData.user
     this.gameMap = createData.gameMap
+    this.emitter = new EventEmitter()
   }
 
-  changeClass (gameClass: GameClassInterface) {
+  public changeClass (gameClass: GameClassInterface) {
     const isClassLocked = this.user.userLockedData.classes.find((playerClass) => playerClass.name === gameClass.name)
 
     if (isClassLocked) {
@@ -63,12 +66,17 @@ export class RoomPlayerEnity {
     })
   }
 
-  die () {
+  private die (damagerId: number) {
     this.respawnTimeout = 10
     this.dies = this.dies + 1
 
     this.socket.emit('update:player-die')
     this.socket.emit('redirect', 'choice-charter')
+
+    this.emitter.emit('player-die', {
+      playerId: this.user.id,
+      killerId: damagerId,
+    })
 
     this.respawnTimeoutFunction = setInterval(() => {
       this.respawnTimeout = this.respawnTimeout - 1
@@ -77,14 +85,14 @@ export class RoomPlayerEnity {
     })
   }
 
-  respawn () {
+  public respawn () {
     if (this.respawnTimeout > 0) return
 
     this.position = getRandomRespawn({ gameMap: this.gameMap, comand: this.command })
     this.socket.emit('redirect', 'game')
   }
 
-  respawnForMoney () {
+  private respawnForMoney () {
     if (this.user.money < this.respawnForMonyPrice) return
 
     this.user.money = this.user.money - this.respawnForMonyPrice
@@ -93,7 +101,7 @@ export class RoomPlayerEnity {
     this.respawn()
   }
 
-  move (data: PlayerMoveParamInterface) {
+  public move (data: PlayerMoveParamInterface) {
     this.position = data.position
     this.animation = data.animation
 
@@ -103,7 +111,7 @@ export class RoomPlayerEnity {
     })
   }
 
-  takeDamage (damage: number) {
+  public takeDamage (damage: number, damagerId: number) {
     const totalDamage = (damage - (damage * this.armorPersent / 100))
     this.hp = this.hp - totalDamage
 
@@ -112,10 +120,10 @@ export class RoomPlayerEnity {
       damage: totalDamage,
     })
 
-    if (this.hp <= 0) this.die()
+    if (this.hp <= 0) this.die(damagerId)
   }
 
-  incrementKills () {
+  public incrementKills () {
     this.kills = this.kills + 1
   }
 }

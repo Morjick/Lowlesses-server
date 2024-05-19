@@ -1,10 +1,12 @@
 import { OpenUserDataInterface } from "../models/UserSchema"
 import { ConnectedUserInterfaceType } from "../controllers/OnlineController"
 import { GameClassInterface } from "../data/game-classes/GameClass"
-import { GameMapInterface, getRandomMap } from "../data/GameMaps"
+import { CoordsInterface, GameMapInterface, getRandomMap } from "../data/GameMaps"
 import { createRandomString } from "../libs/createRandomString"
 import { PlayerAnimationType, PlayerComandType, PlayerInterface, PlayerPositionInterface } from "../models/UserModel"
 import { RoomPlayerEnity } from "./RoomPlayerEnity"
+import { isObjectInRadius } from "../libs/game-utils/isInRadius"
+import { EventEmitter } from 'events'
 
 export interface RoomEntityCreateData {
   hash: string
@@ -54,6 +56,12 @@ export interface PlayerMoveInterface {
   position: PlayerPositionInterface
 }
 
+export interface GetPlayersInRadiusInterface {
+  radius: number
+  command?: PlayerComandType
+  position: CoordsInterface
+}
+
 export class RommEntity {
   public hash = null
   public players: RoomPlayerEnity[] = []
@@ -72,6 +80,7 @@ export class RommEntity {
 
   private decrementTimeFunctionHash = null
   private minPlayerCount = 2
+  public emitter = null
 
   constructor (data: RoomEntityCreateData) {
     this.hash = data.hash
@@ -79,6 +88,13 @@ export class RommEntity {
     this.gameMap = getRandomMap({ gameMode: data.gameMode, playersCount: 10 })
     this.gameStatus = 'preparation'
     this.gameSocket = data.gameSocket.to(this.hash)
+    this.emitter = new EventEmitter()
+
+    this.emitter.on('player-die', (data) => {
+      const killer = this.players.find((el) => el.user.id === data.killerId)
+
+      killer.incrementKills()
+    })
   }
 
   decrementTime () {
@@ -92,7 +108,7 @@ export class RommEntity {
     if (this.gameTime === 0) this.endGame()
   }
 
-  join (player: JoinToRoomUserParamInterface, userSocket: any) {
+  public join (player: JoinToRoomUserParamInterface, userSocket: any) {
     if (this.players.length === this.maxPlayersCount) return
 
     const notification: RommNotificationsInterface = {
@@ -122,7 +138,21 @@ export class RommEntity {
     if (this.players.length === this.maxPlayersCount) this.isCanJoin = false
   }
 
-  choiceCharter (player: GameRoomPlayerInterface) {
+  public disconnect (player: GameRoomPlayerInterface) {
+    this.players.filter(element => element.user.id !== player.user.id)
+
+    player.socket.emit('redirect', 'main-menu')
+
+    this.addNotification({
+      message: `Игрок ${player.user.username} покинул игру`,
+      time: Date.toString(),
+      type: 'normal',
+      notificationHash: createRandomString()
+    })
+
+  }
+
+  public choiceCharter (player: GameRoomPlayerInterface) {
     this.redirectPlayer(player, 'choice-charter')
   }
 
@@ -151,7 +181,7 @@ export class RommEntity {
     }
   }
 
-  getPlayerComand (): PlayerComandType {
+  public getPlayerComand (): PlayerComandType {
     if (this.gameMode === 'deathmatch') return 'any'
 
     let blueTeamCount = 0
@@ -168,7 +198,7 @@ export class RommEntity {
     else return 'blue'
   }
 
-  onPlayerConnectGame (playerId: number) {
+  public onPlayerConnectGame (playerId: number) {
     const player = this.players.find((connectedPlayer) => connectedPlayer.user.id === playerId)
 
     if (!player || !player.user.id) return
@@ -184,7 +214,7 @@ export class RommEntity {
     this.onRespawn(playerId)
   }
 
-  redirectPlayer (player: GameRoomPlayerInterface, gameInterface: ConnectedUserInterfaceType) {
+  public redirectPlayer (player: GameRoomPlayerInterface, gameInterface: ConnectedUserInterfaceType) {
     player.socket.emit('redirect', gameInterface)
   }
 
@@ -196,11 +226,11 @@ export class RommEntity {
     this.updatePlayersState()
   }
 
-  addNotification (notification: RommNotificationsInterface) {
+  public addNotification (notification: RommNotificationsInterface) {
     this.notifications.push(notification)
   }
 
-  updatePlayersState () {
+  public updatePlayersState () {
     this.gameSocket.emit('update-position', {
       players: this.players.map((player) => {  return { ...player, socket: null }}),
       teamsCount: {
@@ -210,7 +240,7 @@ export class RommEntity {
     })
   }
 
-  onPlayerMoving (data: OnPlayerMovingInterface) {
+  private onPlayerMoving (data: OnPlayerMovingInterface) {
     if (this.gameStatus !== 'in-progress') return
 
     this.players
@@ -220,13 +250,13 @@ export class RommEntity {
     this.updatePlayersState()
   }
 
-  onPlayerTakeDamage (data: OnPlayerTakeDamageInterface) {
+  private onPlayerTakeDamage (data: OnPlayerTakeDamageInterface) {
     const playerIndex: number = this.players.findIndex((connectPlayer) => connectPlayer.user.id === data.playerId)
 
     this.players[playerIndex].class.hp = this.players[playerIndex].class.hp - data.damage
   }
 
-  startGame () {
+  public startGame () {
     try {
       if (this.players.length < this.minPlayerCount) {
         this.gameSocket.emit('room-warning', `Игра не может начаться, пока в ней не будет минимум ${this.minPlayerCount} игроков`)
@@ -256,7 +286,7 @@ export class RommEntity {
     }
   }
 
-  endGame () {
+  public endGame () {
     if (this.gameMode === 'deathmatch') {
       const playersKillsCount = this.players.reduce((acc, player) => {
         return acc + player.kills
@@ -289,6 +319,12 @@ export class RommEntity {
       player.socket.emit('redirect', 'menu')
       player.socket.join('main-menu')
       player.socket.handshake.roomHash = 'main-menu'
+    })
+  }
+
+  public getPlayersInRadius (data: GetPlayersInRadiusInterface) {
+    this.players.forEach((player) => {
+      const isPlayerInRadius = isObjectInRadius(data.position, player.position.coords, data.radius)
     })
   }
 }
