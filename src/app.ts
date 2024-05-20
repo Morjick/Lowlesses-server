@@ -7,6 +7,8 @@ import { Container } from "typedi"
 import { connectToDataBase } from "./data/DataBase"
 import { ShopController } from "./controllers/ShopController"
 import { HeroesController } from "./controllers/HeroesController"
+import { NewsController } from "./controllers/NewsController"
+import { ForumController } from "./controllers/ForumController"
 
 const init = async () => {
   const port = process.env.PORT
@@ -21,7 +23,7 @@ const init = async () => {
   })
 
   const app = createExpressServer({
-    controllers: [UserController, ShopController],
+    controllers: [UserController, ShopController, NewsController, ForumController],
     interceptors: [GlobalResponseInterceptor],
     cors: {
       methods:"GET,HEAD,PUT,PATCH,POST,DELETE",

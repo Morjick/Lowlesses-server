@@ -96,4 +96,40 @@ export class UserModel extends Model {
 
   @Column({ type: DataType.JSON, defaultValue: JSON.stringify(userGameClassData) })
   userLockedData: string
+
+  @Column({ type: DataType.STRING })
+  email: string
+
+  @Column({ type: DataType.STRING })
+  firstname: string
+
+  @Column({ type: DataType.STRING })
+  lastname: string
+
+  @Column({ type: DataType.STRING })
+  patronomic: string
+
+  @Column({ type: DataType.STRING })
+  avatar: string
+
+  @Column({ type: DataType.STRING })
+  slug: string
+
+  @Column({ type: DataType.STRING })
+  developerRoleRU: string
+
+  @Column({ type: DataType.STRING })
+  developerRoleRN: string
+
+  @Column({ type: DataType.STRING })
+  telegram: string
+
+  @Column({ type: DataType.STRING })
+  vk: string
+
+  @Column({ type: DataType.STRING })
+  whatsapp: string
+
+  @Column({ type: DataType.STRING })
+  discord: string
 }

@@ -18,7 +18,10 @@ export const CreateRootUser = async () => {
     username: process.env.ROOT_NAME,
     password: String(hashPassword),
     role: 'ROOT',
-    userHash: hash
+    userHash: hash,
+    email: 'lowlesses@mail.ru',
+    firstname: 'Lowlesses',
+    lastname: 'Team'
   })
 
   await UsersFriendsModel.create({ userId: user.dataValues.id })

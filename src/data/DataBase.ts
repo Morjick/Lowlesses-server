@@ -6,8 +6,10 @@ import { CreateRootUser } from "./scripts/CreateRootUser"
 import { BaffsModel } from "../models/BaffsModel"
 import { GameSkillModel } from "../models/GameSkillModel"
 import { GameClassModel } from "../models/GameClassModel"
-import { createGameShop } from "./migrations/createGameClassesForShop"
+import { NewsModel } from "../models/NewsModel"
 import { getGameClassesFromDB } from "./game-classes/GameClass"
+import { ForumThemeModel } from "../models/ForumThemeModel"
+import { ForumArticleModel } from "../models/ForumArticleModel"
 
 require('dotenv').config()
 
@@ -48,13 +50,24 @@ const connectToDataBase = async (data: DataBaseConstructorInterface) => {
     },
     logging: false,
     port: Number(data.PORT),
-    models: [UserModel, UsersFriendsModel, FriendRelatedModel, EquipmentModel, BaffsModel, GameSkillModel, GameClassModel],
+    models: [
+      UserModel,
+      UsersFriendsModel,
+      FriendRelatedModel,
+      EquipmentModel,
+      BaffsModel,
+      GameSkillModel,
+      GameClassModel,
+      NewsModel,
+      ForumThemeModel,
+      ForumArticleModel,
+    ],
   })
 
 
   try {
-    database.authenticate()
-    database.sync({ alter: true, })
+    await database.authenticate()
+    await database.sync({ alter: false, })
     await CreateRootUser()
     await getGameClassesFromDB()
     // await createGameShop()

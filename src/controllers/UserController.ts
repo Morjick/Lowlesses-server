@@ -187,7 +187,7 @@ export class UserController {
     }
   }
 
-  async setOnlinestatus (id, isOnlien) {
-    await UserModel.update({ isOnlien }, { where: { id } })
+  async setOnlinestatus (id, isOnline) {
+    await UserModel.update({ isOnline }, { where: { id } })
   }
 }
