@@ -1,0 +1,110 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Lowlesses News API",
+    "description": "Тут описаны методы для взаимодействия с сущностью новостей",
+    "version": "1.0"
+  },
+  "produces": ["application/json"],
+  "paths": {
+    "/create": {
+      "post": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["For Admin User"],
+        "description": "Создать новость",
+        "parameters": [
+          { "name": "titleRU", "in": "formData", "required": true, "type": "string" },
+          { "name": "titleEN", "in": "formData", "required": true, "type": "string" },
+          { "name": "bodyRU", "in": "formData", "required": true, "type": "string" },
+          { "name": "bodyEN", "in": "formData", "required": true, "type": "string" },
+          { "name": "descriptionRU", "in": "formData", "required": true, "type": "string" },
+          { "name": "descriptionEN", "in": "formData", "required": true, "type": "string" },
+          { "name": "isShow", "in": "formData", "required": false, "type": "boolean" },
+          { "name": "avatar", "in": "formData", "required": false, "type": "string" },
+          { "name": "tags", "in": "formData", "required": true, "type": "array", "items": { "type": "string" } }
+        ],
+        "responses": {}
+      }
+    },
+    "/update-news/:slug": {
+      "post": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["For Admin User"],
+        "description": "Изменить новость",
+        "parameters": [
+          { "name": "titleRU", "in": "formData", "required": true, "type": "string" },
+          { "name": "titleEN", "in": "formData", "required": true, "type": "string" },
+          { "name": "bodyRU", "in": "formData", "required": true, "type": "string" },
+          { "name": "bodyEN", "in": "formData", "required": true, "type": "string" },
+          { "name": "descriptionRU", "in": "formData", "required": true, "type": "string" },
+          { "name": "descriptionEN", "in": "formData", "required": true, "type": "string" },
+          { "name": "isShow", "in": "formData", "required": false, "type": "boolean" },
+          { "name": "avatar", "in": "formData", "required": false, "type": "string" },
+          { "name": "tags", "in": "formData", "required": true, "type": "array", "items": { "type": "string" } },
+          { "name": "slug", "in": "formData", "required": false, "type": "string" },
+          { "name": "id", "in": "formData", "required": false, "type": "number" },
+          { "name": "autorId", "in": "formData", "required": false, "type": "number" }
+        ],
+        "responses": {}
+      }
+    },
+    "/get-news-edit/:slug": {
+      "get": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["For Admin User"],
+        "description": "Получить новость по ссылке для редактирования",
+        "responses": {}
+      }
+    },
+    "/get-hidden": {
+      "get": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["For Admin User"],
+        "description": "Получить скрытые новость",
+        "responses": {}
+      }
+    },
+    "/get-news/:slug": {
+      "get": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["Other"],
+        "description": "Получить новость по ссылке",
+        "parameters": [
+          { "name": "locale", "in": "formData", "required": true, "type": "string", "enum": ["ru-RU", "en-EN"] }
+        ],
+        "responses": {}
+      }
+    },
+    "/get-many": {
+      "get": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["Other"],
+        "description": "Получить список новостей",
+        "parameters": [
+          { "name": "limit", "in": "formData", "required": true, "type": "string"},
+          { "name": "offset", "in": "formData", "required": true, "type": "string"},
+          { "name": "locale", "in": "formData", "required": true, "type": "string", "enum": ["ru-RU", "en-EN"]}
+        ],
+        "responses": {}
+      }
+    },
+    "/:slug": {
+      "delete": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["For Admin User"],
+        "description": "Удалить новость",
+        "parameters": [
+          { "name": "slug", "in": "formData", "required": true, "type": "string"}
+        ],
+        "responses": {}
+      }
+    }
+  }
+}

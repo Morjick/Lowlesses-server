@@ -24,3 +24,9 @@ export interface CreateNewsItemDataInterface {
   avatar?: string
   tags: string[]
 }
+
+export interface UpdateNewsDataInterface extends CreateNewsItemDataInterface {
+  slug: string
+  id: number
+  autorId: number
+}

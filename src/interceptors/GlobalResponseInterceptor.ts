@@ -18,17 +18,19 @@ export class GlobalResponseInterceptor implements InterceptorInterface {
       }
     }
 
-      const customResponse = {
-        status: content.status || 501,
-        message: content.message,
-        body: content.body,
-        error: content.error?.length ? 
-          content.error : 
-          content.status >= 300 ? 
-            'Неожиданная ошибка сервера, попробуйте позже' : 
-            null 
-      }
+    const customResponse = {
+      status: content.status || 501,
+      statusCode: content.status || 501,
+      message: content.message,
+      body: content.body,
+      error: content.error?.length ? 
+        content.error : 
+        content.status >= 300 ? 
+          'Неожиданная ошибка сервера, попробуйте позже' : 
+          null 
+    }
 
-      return customResponse
+    action.response.status(content.status)
+    return customResponse
   }
 }

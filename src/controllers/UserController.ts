@@ -1,5 +1,6 @@
-import { CreateUserInterface, SetUserInvitedHashInterface, UserModel, UsersFriendsModel } from '../models/UserSchema'
-import { Body, Post, JsonController, UseBefore, Req } from 'routing-controllers'
+import { developerRoleList } from './../data/lists/developer-roles.list';
+import { CreateUserInterface, SetUserInvitedHashInterface, UserModel, UsersFriendsModel, UpdateUserDataInterface } from '../models/UserSchema'
+import { Body, Post, JsonController, UseBefore, Req, Get } from 'routing-controllers'
 import * as bcrypt from 'bcrypt'
 import 'reflect-metadata'
 import { IsValidPassword } from '../libs/isValidVassword'
@@ -9,6 +10,7 @@ import { secretKey } from '../data/DataBase'
 import { checkToken } from '../libs/checkAuth'
 import { createRandomString } from '../libs/createRandomString'
 import { AuthMiddleware } from '../middleware/AuthMiddleware'
+import { UserRoleType } from '../models/UserModel';
 
 @JsonController ('/user')
 export class UserController {
@@ -128,10 +130,17 @@ export class UserController {
   async checkToken(@Body() body) {
     const { token } = body
     const { user } = await checkToken(token)
+    
+    if (!user) return {
+      status: 304,
+      message: 'Трубуется подтвердить авторизацию',
+      error: 'User Token is invalid'
+    }
 
     return {
       message: 'Авторизация подтверждена',
       ok: true,
+      status: 200,
       body: {
         user
       }
@@ -187,7 +196,62 @@ export class UserController {
     }
   }
 
+  @Post('/set-user-role')
+  @UseBefore(AuthMiddleware)
+  async setRole(@Body() body, @Req() request) {
+    const role: UserRoleType = body.role
+    const user = request.user
+    
+    if (user.role === 'ROOT') return {
+      status: 304,
+      message: 'Никто не может поменять роль ROOT',
+      error: 'NotPermission'
+    }
+
+    await UserModel.update({ role }, { where: { id: user.id } })
+
+    return {
+      status: 200,
+      message: 'Роль успешно изменена',
+      body: {}
+    }
+  }
+
+  @Post('/update-user')
+  @UseBefore(AuthMiddleware)
+  async updateUser (@Req() req, @Body() body: UpdateUserDataInterface) {
+    const user = req.user
+
+    const candidat = await UserModel.findOne({ where: { id: user.id } })
+
+    if (!candidat) return {
+      status: 404,
+      message: 'Пользователь с таким именем не найден',
+      error: 'NotFound'
+    }
+
+    await UserModel.update({ ...body }, { where: { id: user.id } })
+
+    return {
+      status: 200,
+      message: 'Данные были обновлены',
+      ok: true,
+      body: {}
+    }
+  }
+
   async setOnlinestatus (id, isOnline) {
     await UserModel.update({ isOnline }, { where: { id } })
+  }
+
+  @Get('/get-developer-roles')
+  async getDeveloperRoles () {
+    return {
+      status: 200,
+      message: 'Список ролей получен',
+      body: {
+        roles: developerRoleList
+      }
+    }
   }
 }

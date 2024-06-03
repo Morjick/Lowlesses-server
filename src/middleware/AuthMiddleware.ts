@@ -1,17 +1,26 @@
 import { checkToken } from "../libs/checkAuth"
 
 export const AuthMiddleware = async (request: any, response: any, next?: (err?: any) => any) => {
-  const token = request.headers.authorization
+  try {
+    const token = request.headers.authorization
 
-  const { user } = await checkToken(token)
+    const { user, ok, message, error, status } = await checkToken(token)
 
-  if (!user?.role) return {
-    ok: false,
-    status: 401,
-    message: "Для выполнения необходимо авторизоваться",
-    error: "Для выполнения необходимо авторизоваться",
+    if (!user || !ok) {
+      throw new Error()
+    }
+
+    if (!user?.role) throw new Error()
+
+    request.user = user
+    next()
+  } catch(e) {
+    const error = response.status(401).json({
+      ok: false,
+      status: 401,
+      message: "Для этого запроса необходимо авторизоваться",
+      error: "Для этого запроса необходимо авторизоваться",
+    })
+    next(error)
   }
-
-  request.user = user
-  next()
 }

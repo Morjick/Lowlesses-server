@@ -21,3 +21,8 @@ export interface ForumModerateArticleDataInterface {
   isModeration: boolean
   isShow: boolean
 }
+
+export interface ForumSendCommentDataInterface {
+  message: string
+  articleId: number
+}

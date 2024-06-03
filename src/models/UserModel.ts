@@ -13,7 +13,7 @@ import { OpenUserDataInterface } from "./UserSchema"
 import { CoordsInterface } from "../data/GameMaps"
 import { GameClassInterface, GameClasses, PlayerClassType } from "../data/game-classes/GameClass"
 
-export type UserRoleType = 'USER' | 'ADMIN' | 'ROOT'
+export type UserRoleType = 'USER' | 'ADMIN' | 'ROOT' | 'MODERATOR'
 export type PlayerStatusTpye = 'online' | 'ofline'
 export type PlayerAnimationType = 'run' | 'idle' | 'attack' | 'jump'
 export type PlayerComandType = 'blue' | 'red' | 'any'
@@ -67,7 +67,7 @@ export class UserModel extends Model {
   isOnline: boolean
 
   @Column({
-    type: DataType.ENUM('USER', 'ADMIN', 'ROOT'),
+    type: DataType.ENUM('USER', 'ADMIN', 'ROOT', 'MODERATOR'),
     defaultValue: 'USER'
   })
   role: UserRoleType

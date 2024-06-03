@@ -10,6 +10,7 @@ import { NewsModel } from "../models/NewsModel"
 import { getGameClassesFromDB } from "./game-classes/GameClass"
 import { ForumThemeModel } from "../models/ForumThemeModel"
 import { ForumArticleModel } from "../models/ForumArticleModel"
+import { ForumCommentModel } from "../models/ForumCommentMode"
 
 require('dotenv').config()
 
@@ -61,6 +62,7 @@ const connectToDataBase = async (data: DataBaseConstructorInterface) => {
       NewsModel,
       ForumThemeModel,
       ForumArticleModel,
+      ForumCommentModel,
     ],
   })
 

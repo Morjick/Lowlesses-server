@@ -1,8 +1,8 @@
 
 import * as jwt from 'jsonwebtoken'
-import { OpenUserDataInterface, UserModel, UsersFriendsModel } from '../models/UserSchema';
-import { FriendRelatedModel } from '../models/FriendRelatedModel';
-import { getGamseClassesFromUser } from '../data/game-classes/GameClass';
+import { OpenUserDataInterface, UserModel, UsersFriendsModel } from '../models/UserSchema'
+import { FriendRelatedModel } from '../models/FriendRelatedModel'
+import { getGamseClassesFromUser } from '../data/game-classes/GameClass'
 require('dotenv').config()
 
 interface ResponseCheckAuthInterface {
@@ -10,12 +10,20 @@ interface ResponseCheckAuthInterface {
   ok: boolean
   status: number
   user?: OpenUserDataInterface
+  error?: string
 }
 
 export const checkToken = async (token: string, isOnline = true): Promise<ResponseCheckAuthInterface> => {
   const secretKey = process.env.JWT_SECRET_KEY
 
   try {
+    if (!token || !token.length) return {
+      message: 'Не удалось подтвердить авторизацию',
+      ok: false,
+      status: 401,
+      error: 'Нет токена авторизации',
+    }
+
     const { id } = jwt.verify(token, secretKey, {
       secret: secretKey,
     })
@@ -25,7 +33,7 @@ export const checkToken = async (token: string, isOnline = true): Promise<Respon
         message: 'Не удалось подтвердить авторизацию',
         ok: false,
         status: 401,
-      };
+      }
     }
 
     await UserModel.update({ isOnline, }, { where: { id: id } })
@@ -34,28 +42,6 @@ export const checkToken = async (token: string, isOnline = true): Promise<Respon
       attributes: {
         exclude: ['password', 'createdAt', 'updatedAt'],
       },
-      include: [
-        {
-          model: UsersFriendsModel,
-          attributes: { 
-            exclude: ['password', 'createdAt', 'updatedAt'], 
-          },
-          include: [
-            {
-              model: FriendRelatedModel,
-              attributes: { 
-                exclude: ['password', 'createdAt', 'updatedAt', 'money', 'kills', 'deaths', 'friendsListId'], 
-              },
-              include: [ { 
-                model: UserModel, 
-                attributes: { 
-                  exclude: ['password', 'createdAt', 'updatedAt', 'money', 'kills', 'deaths', 'friendsListId'], 
-                },
-              }]
-            }
-          ]
-        }
-      ]
     })
 
     if (!user) {
@@ -65,13 +51,14 @@ export const checkToken = async (token: string, isOnline = true): Promise<Respon
         status: 402
       }
     }
+    console.log(user.dataValues.userLockedData)
 
     const userOpenData = {
       ...user.dataValues,
       friends: user.dataValues.friendList?.dataValues
         ? user.dataValues.friendList.dataValues.friends.map((el) => el.dataValues.user.dataValues)
         : [],
-      userLockedData: JSON.parse(user.dataValues.userLockedData)
+      userLockedData: typeof user.dataValues.userLockedData !== 'string' ? user.dataValues.userLockedData : JSON.parse(user.dataValues.userLockedData)
     }
 
     if (!userOpenData.friends.friendsId) {

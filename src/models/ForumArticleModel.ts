@@ -1,3 +1,4 @@
+import { ForumCommentModel } from './ForumCommentMode';
 import { ForumThemeModel } from './ForumThemeModel';
 import { UserModel } from './UserModel';
 import {
@@ -66,4 +67,7 @@ export class ForumArticleModel extends Model {
 
   @BelongsTo(() => ForumThemeModel)
   theme: ForumThemeModel
+
+  @HasMany(() => ForumCommentModel, /* foreign key */ 'articleId')
+  comments: ForumCommentModel[]
 }

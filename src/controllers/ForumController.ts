@@ -1,3 +1,5 @@
+import { ForumSendCommentDataInterface } from './../data/contracts/forum.contracts';
+import { AdminMiddleware } from './../middleware/AdminMiddleware';
 import { Body, Post, Get, JsonController, UseBefore, Req, QueryParams, Param, Params, Delete } from 'routing-controllers'
 import { AuthMiddleware } from '../middleware/AuthMiddleware'
 import { CreateNewsItemDataInterface } from '../data/contracts/news.contracts'
@@ -8,11 +10,13 @@ import { CreateForumArticleDataInterface, CreateForumThemeDataInterface, ForumMo
 import { ForumThemeModel } from '../models/ForumThemeModel'
 import { ForumArticleModel } from '../models/ForumArticleModel'
 import { checkToken } from '../libs/checkAuth'
+import { obscense } from '../libs/filters/obscense';
+import { ForumCommentModel } from '../models/ForumCommentMode';
 
 @JsonController ('/forum')
 export class ForumController {
   @Post('/create-theme')
-  @UseBefore(AuthMiddleware)
+  @UseBefore(AdminMiddleware)
   async createTheme (@Req() request, @Body() body: CreateForumThemeDataInterface) {
     const user = request.user
     
@@ -39,8 +43,10 @@ export class ForumController {
   }
 
   @Post('/create-article')
+  @UseBefore(AuthMiddleware)
   async createArticle (@Req() request, @Body() body: CreateForumArticleDataInterface) {
     const user = request.user || (await checkToken(request.headers.authorization)).user
+    const isUserRole = user.role === 'USER'
 
     if (!body.locale) return {
       status: 501,
@@ -67,11 +73,14 @@ export class ForumController {
       autorId: user.id,
       themeId: body.themeId,
       slug,
+      isShow: isUserRole ? false : true,
+      isModeration: isUserRole ? false : true,
+      moderatorId: isUserRole ? null : user.id
     })
 
     return {
       status: 200,
-      message: 'Статья успешно создана',
+      message: isUserRole ? 'Статья отправлена на модерацию' : 'Статья опубликована',
       body: {
         article: article.dataValues,
       }
@@ -79,7 +88,7 @@ export class ForumController {
   }
 
   @Post('/moderate-article/:slug')
-  @UseBefore(AuthMiddleware)
+  @UseBefore(AdminMiddleware)
   async moderateArticle (@Req() request, @Body() body: ForumModerateArticleDataInterface, @Params() params) {
     const user = request.user
     const { slug } = params
@@ -102,10 +111,11 @@ export class ForumController {
 
     const themes = await ForumThemeModel.findAll({
       attributes: [
-        [locale === 'ru-RU' ? 'titleRU' : 'titleEN', 'tite'],
+        [locale === 'ru-RU' ? 'titleRU' : 'titleEN', 'title'],
         [locale === 'ru-RU' ? 'descriptionRU' : 'descriptionEN', 'description'],
         'tags',
         'avatar',
+        'id',
       ]
     })
 
@@ -139,29 +149,78 @@ export class ForumController {
         'tags',
         'title',
         'description',
-        'tags'
+        'tags',
+        'views',
+        'createdAt',
+        // 'body',
       ],
       order: [['createdAt', 'DESC']],
+      include: [
+        {
+          model: UserModel,
+          as: 'autor',
+          attributes: [
+            'username',
+            'id',
+            'isOnline',
+            'role',
+            'firstname',
+            'lastname',
+            'patronomic',
+            'email',
+            'avatar',
+          ]
+        }
+      ],
+    })
+    const theme = await ForumThemeModel.findOne({
+      where: { id: themeId },
+      attributes: [
+        [locale === 'ru-RU' ? 'titleRU' : 'titleEN', 'title'],
+        [locale === 'ru-RU' ? 'descriptionRU' : 'descriptionEN', 'description'],
+        'tags',
+        'avatar',
+        'id',
+      ]
     })
 
     const articleCount = await ForumArticleModel.count({ where: { isShow: true, locale, themeId }, })
 
-    const pages = articleCount / limit > 1 ? Math.ceil(articleCount) / limit : 1
-    const nextPageAvaible = pages > 1 ? true : false;
+    const pages = Math.ceil(articleCount / limit > 1 ? Math.ceil(articleCount) / limit : 1)
     const activePage = Math.ceil(offset / limit)
-      ? Math.ceil(offset / limit)
+      ? Math.ceil(offset / limit) + 1
       : 1
+    const nextPageAvaible = activePage + 1 > pages ? false : true
+
+    const getCommentsLength = async (id: number): Promise<number> => {
+      const comments = await ForumCommentModel.count({ where: { articleId: id, isModerated: true, } })
+
+      return comments
+    }
+
+    const articlesValue = await Promise.all(articles.map(async (el) => {
+      const commentsCount = await getCommentsLength(el.dataValues.id)
+
+      return {
+        ...el.dataValues,
+        autor: el.dataValues.autor.dataValues,
+        commentsCount: commentsCount,
+      }
+    }))
 
     return {
       status: 200,
       message: 'Статьи успешно получены',
       body: {
-        articles: articles.map(el => el.dataValues),
+        articles: articlesValue,
         pagination: {
-          totalCount: pages,
+          totalCount: articleCount,
           isNextPageAvaible: nextPageAvaible,
+          isPrevPageAvaible: Boolean(activePage - 1 > 0),
           activePage,
-        }
+          totalPages: pages,
+        },
+        theme: theme.dataValues
       }
     }
   }
@@ -170,13 +229,40 @@ export class ForumController {
   async getArticle (@Params() params) {
     const { slug } = params
 
-    const article = await ForumArticleModel.findOne({ where: { slug } })
+    const article = await ForumArticleModel.findOne(
+      { where: { slug, isShow: true },
+    })
 
     if (!article || !article.dataValues.isShow) return {
       status: 404,
       message: 'Статья не была найдена',
       error: 'Page Not Found'
     }
+
+    const comments = await ForumCommentModel.findAll({
+      where: {
+        articleId: article.dataValues.id,
+        isModerated: true,
+      },
+      include: [
+        {
+          model: UserModel,
+          as: 'autor',
+          attributes: [
+            'username',
+            'id',
+            'isOnline',
+            'role',
+            'firstname',
+            'lastname',
+            'patronomic',
+            'email',
+            'avatar',
+          ],
+
+        }
+      ]
+    })
 
     const autor = await UserModel.findOne({
       where: { id: article.dataValues.autorId },
@@ -199,13 +285,33 @@ export class ForumController {
         article: {
           ...article.dataValues,
           autor: autor.dataValues,
+          comments: comments.map(el => {
+            return {
+              ...el.dataValues,
+              autor: el.dataValues.autor.dataValues
+            }
+          })
         }
       }
     }
   }
 
-  @Delete('/delete/:slug')
-  @UseBefore(AuthMiddleware)
+  @Get('/get-articles-moderation')
+  @UseBefore(AdminMiddleware)
+  async getArticlesForModeration () {
+    const articles = await ForumArticleModel.findAll({ where: { isShow: false } })
+
+    return {
+      message: 'Статьи для модерации получены',
+      status: 200,
+      body: {
+        articles: articles.map(el => el.dataValues)
+      }
+    }
+  }
+
+  @Delete('/delete-article/:slug')
+  @UseBefore(AdminMiddleware)
   async deleteArticle (@QueryParams() query) {
     const { slug } = query
 
@@ -214,6 +320,128 @@ export class ForumController {
     return {
       status: 200,
       message: 'Статья была удалена',
+    }
+  }
+
+  @Post('/send-comment')
+  @UseBefore(AuthMiddleware)
+  async sendComment(@Body() body: ForumSendCommentDataInterface, @Req() req) {
+    if (!body.message || (body.message.length < 10 || body.message.length > 50)) return {
+      status: 400,
+      message: 'Поле "message" является обязательным и должно быть не менее 10 и не более символов',
+      error: 'InvalidField'
+    }
+
+    if (!body.articleId || typeof body.articleId !== 'number') return {
+      status: 400,
+      message: 'Поле "articleId" обязательно и должно быть числом',
+      error: 'InvalidField'
+    }
+
+    const user = req.user
+    const isValidMessage = obscense(body.message)
+
+    const article = await ForumArticleModel.findOne({ where: { id: body.articleId } })
+
+    if (!article) return {
+      status: 404,
+      message: 'Статья с таким ID не была найдена',
+      error: 'NotFound'
+    }
+    
+    const comment = await ForumCommentModel.create({
+      message: body.message,
+      autorId: user.id,
+      isModerated: isValidMessage,
+      publicDate: new Date().toLocaleString('ru'),
+      articleId: body.articleId,
+    })
+
+    return {
+      status: 200,
+      message: isValidMessage ? 'Комментарий оставлен' : 'Комментарий отправлен на модерацию',
+      body: {
+        comment: comment.dataValues,
+      },
+    }
+  }
+
+  @Post('/moderate-comment/:id')
+  @UseBefore(AdminMiddleware)
+  async moderateComment(@Param('id') id: number, @Req() req) {
+    const user = req.user
+    
+    const comment = await ForumCommentModel.findOne({ where: { id: Number(id) } })
+
+    if (!comment || comment.dataValues.isModerated) return {
+      status: 404,
+      message: 'Комментарий не был найден',
+      error: 'NotFound',
+    }
+
+    await ForumCommentModel.update({ moderatorId: user.id, isModerated: true }, { where: { id } })
+
+    return {
+      status: 200,
+      message: 'Комментарий был допущен к публикации',
+      body: {},
+    }
+  }
+
+  @Delete('/delete-comment/:id')
+  @UseBefore(AuthMiddleware)
+  async deleteComment (@Param('id') id: number, @Req() req) {
+    const user = req.user
+    const comment = await ForumCommentModel.findOne({ where: { id: Number(id) } })
+
+    if (!comment) return {
+      status: 404,
+      message: 'Комментарий не был найден',
+      error: 'NotFound'
+    }
+
+    if (user.role === 'USER' && comment.dataValues.autorId !== user.id) return {
+      message: 'Вы не можете удалить чужой комментарий',
+      status: 304,
+      error: 'NotPermissions'
+    }
+
+    const response = await ForumCommentModel.destroy({ where: { id } })
+
+    return {
+      status: 200,
+      message: 'Комментарий был удалён',
+      body: {
+        response,
+      }
+    }
+  }
+
+  @Get('/get-comments-on-moderate')
+  @UseBefore(AdminMiddleware)
+  async getCommentsOnModerate () {
+    const comments = await ForumCommentModel.findAll({ where: { isModerated: false }, include: { all: true } })
+
+    return {
+      status: 200,
+      message: 'Комментарии для модерации получены',
+      body: {
+        comments: comments.map(el => el.dataValues),
+      }
+    }
+  }
+
+  @Get('/get-count-moderate-comments')
+  @UseBefore(AdminMiddleware)
+  async getModerateCommentsCount () {
+    const comments = await ForumCommentModel.count({ where: { isModerated: false }})
+
+    return {
+      status: 200,
+      message: 'Число комментариев на модерации получено',
+      body: {
+        comments: comments,
+      }
     }
   }
 }

@@ -44,6 +44,17 @@ interface SetUserInvitedHashInterface {
   invitedHash: string
 }
 
+interface UpdateUserDataInterface {
+  username: string
+  firstname: string
+  lastname: string
+  patronomic: string
+  telegram: string
+  vk: string
+  whatsapp: string
+  discord: string
+}
+
 export {
   UserModel,
   UsersFriendsModel,
@@ -51,4 +62,5 @@ export {
   type CreateUserInterface,
   type SetUserInvitedHashInterface,
   type UserLockedDataInterface,
+  type UpdateUserDataInterface,
 } 

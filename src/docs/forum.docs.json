@@ -1,0 +1,153 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Lowlesses Forum API",
+    "description": "Тут описаны методы для взаимодействия с форумом",
+    "version": "1.0"
+  },
+  "produces": ["application/json"],
+  "paths": {
+    "/create-theme": {
+      "post": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["For Admin User"],
+        "description": "Создать тему",
+        "parameters": [
+          { "name": "titleRU", "in": "formData", "required": true, "type": "string" },
+          { "name": "titleEN", "in": "formData", "required": true, "type": "string" },
+          { "name": "descriptionRU", "in": "formData", "required": true, "type": "string" },
+          { "name": "descriptionEN", "in": "formData", "required": true, "type": "string" },
+          { "name": "avatar", "in": "formData", "required": false, "type": "string" },
+          { "name": "tags", "in": "formData", "required": true, "type": "array", "items": { "type": "string" } }
+        ],
+        "responses": {}
+      }
+    },
+    "/create-article": {
+      "post": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/article"],
+        "description": "Создать статью",
+        "parameters": [
+          { "name": "title", "in": "formData", "required": true, "type": "string" },
+          { "name": "description", "in": "formData", "required": true, "type": "string" },
+          { "name": "body", "in": "formData", "required": true, "type": "string" },
+          { "name": "themeId", "in": "formData", "required": true, "type": "number" },
+          { "name": "locale", "in": "formData", "required": true, "type": "string", "enum": ["ru-RU", "en-EN"] }
+        ],
+        "responses": {}
+      }
+    },
+    "/get-themes": {
+      "get": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/aticle"],
+        "description": "Получить темы форума",
+        "parameters": [
+          { "name": "locale", "in": "formData", "required": true, "type": "string", "enum": ["ru-RU", "en-EN"] }
+        ],
+        "responses": {}
+      }
+    },
+    "/get-articles": {
+      "get": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/aticle"],
+        "description": "Получить список новостей",
+        "parameters": [
+          { "name": "limit", "in": "formData", "required": true, "type": "number" },
+          { "name": "offset", "in": "formData", "required": true, "type": "number" },
+          { "name": "themeId", "in": "formData", "required": true, "type": "number" },
+          { "name": "locale", "in": "formData", "required": true, "type": "string", "enum": ["ru-RU", "en-EN"] }
+        ],
+        "responses": {}
+      }
+    },
+    "/get-articles/:slug": {
+      "get": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/aticle"],
+        "description": "Получить новость по ссылке",
+        "parameters": [
+          { "name": "slug", "in": "formData", "required": true, "type": "slug" }
+        ],
+        "responses": {}
+      }
+    },
+    "/delete-article/slug": {
+      "delete": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["For Admin User"],
+        "description": "Удалить новость",
+        "parameters": [
+          { "name": "slug", "in": "formData", "required": true, "type": "number" }
+        ],
+        "responses": {}
+      }
+    },
+    "/send-comment": {
+      "post": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/article"],
+        "description": "Оставить комментарий к статье",
+        "parameters": [
+          { "message": "slug", "in": "formData", "required": true, "type": "string" }
+        ],
+        "responses": {}
+      }
+    },
+    "/moderate-comment/:id": {
+      "post": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["For Admin User"],
+        "description": "Оставить комментарий к статье",
+        "parameters": [
+          { "message": "id", "in": "formData", "required": true, "type": "string" }
+        ],
+        "responses": {}
+      }
+    },
+    "/delete-comment/:id": {
+      "delete": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["For Admin User"],
+        "description": "Оставить комментарий к статье",
+        "parameters": [
+          { "message": "id", "in": "formData", "required": true, "type": "string" }
+        ],
+        "responses": {}
+      }
+    },
+    "/get-comments-on-moderate": {
+      "get": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["For Admin User"],
+        "description": "Получить список комментариев без модерации",
+        "parameters": [
+        ],
+        "responses": {}
+      }
+    },
+    "/get-count-moderate-comments": {
+      "get": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["For Admin User"],
+        "description": "Получить число комментариев без модерации",
+        "parameters": [
+        ],
+        "responses": {}
+      }
+    }
+  }
+}

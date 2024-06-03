@@ -1,0 +1,101 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Lowlesses User API",
+    "description": "Тут описаны методы для взаимодействия с сущностью пользователя",
+    "version": "1.0"
+  },
+  "produces": ["application/json"],
+  "paths": {
+    "/create-user": {
+      "post": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/create-user"],
+        "description": "Создать пользователя",
+        "parameters": [
+          { "name": "username", "in": "formData", "required": true, "type": "string" },
+          { "name": "password", "in": "formData", "required": true, "type": "string" }
+        ],
+        "responses": {}
+      }
+    },
+    "/update-user": {
+      "post": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/update-user"],
+        "description": "Создать пользователя",
+        "parameters": [
+          { "name": "username", "in": "formData", "required": true, "type": "string" },
+          { "name": "firstname", "in": "formData", "required": true, "type": "string" },
+          { "name": "lastname", "in": "formData", "required": true, "type": "string" },
+          { "name": "patronomic", "in": "formData", "required": true, "type": "string" },
+          { "name": "telegram", "in": "formData", "required": true, "type": "string" },
+          { "name": "vk", "in": "formData", "required": true, "type": "string" },
+          { "name": "whatsapp", "in": "formData", "required": true, "type": "string" },
+          { "name": "discord", "in": "formData", "required": true, "type": "string" }
+        ],
+        "responses": {}
+      }
+    },
+    "/login": {
+      "post": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/login"],
+        "description": "Авторизоваться",
+        "parameters": [
+          { "name": "username", "in": "formData", "required": true, "type": "string" },
+          { "name": "password", "in": "formData", "required": true, "type": "string" }
+        ],
+        "responses": {}
+      }
+    },
+    "/check-token": {
+      "post": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/check-token"],
+        "description": "Проверить токен на валидность и время действия",
+        "parameters": [
+          { "name": "token", "in": "formData", "required": true, "type": "string" }
+        ],
+        "responses": {}
+      }
+    },
+    "/set-user-hash": {
+      "post": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["For Admin User"],
+        "description": "Установить хэш пользователя, который пригласил в игру",
+        "parameters": [
+          { "name": "invitedHash", "in": "formData", "required": true, "type": "string" }
+        ],
+        "responses": {}
+      }
+    },
+    "/set-user-role": {
+      "post": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["For Admin User"],
+        "description": "Установить роль",
+        "parameters": [
+          { "name": "role", "in": "formData", "required": true, "type": "string", "enum": ["USER", "ADMIN", "ROOT", "MODERATOR"] }
+        ],
+        "responses": {}
+      }
+    },
+    "/get-developer-roles": {
+      "get": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/get-developer-roles"],
+        "description": "Получить список ролей разработчиков",
+        "responses": {}
+      }
+    }
+  }
+}
