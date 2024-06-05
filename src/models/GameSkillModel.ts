@@ -20,7 +20,7 @@ export class GameSkillModel extends Model {
   })
   id: number
 
-  @Column({ type: DataType.STRING, })
+  @Column({ type: DataType.STRING })
   name: string
 
   @Column({ type: DataType.INTEGER })

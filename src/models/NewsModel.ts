@@ -1,4 +1,4 @@
-import { UserModel } from './UserModel';
+import { UserModel } from './UserModel'
 import {
   Table,
   Column,
@@ -10,7 +10,6 @@ import {
 } from 'sequelize-typescript'
 import { EquipmentModel } from './EquipmentModel'
 
-
 @Table
 export class NewsModel extends Model {
   @Column({
@@ -21,16 +20,16 @@ export class NewsModel extends Model {
   })
   id: number
 
-  @Column({ type: DataType.STRING, unique: true, allowNull: false, })
+  @Column({ type: DataType.STRING, unique: true, allowNull: false })
   titleRU: string
 
-  @Column({ type: DataType.STRING, unique: true, allowNull: false, })
+  @Column({ type: DataType.STRING, unique: true, allowNull: false })
   titleEN: string
 
-  @Column({ type: DataType.TEXT, })
+  @Column({ type: DataType.TEXT })
   bodyRU: string
 
-  @Column({ type: DataType.TEXT, })
+  @Column({ type: DataType.TEXT })
   bodyEN: string
 
   @Column({ type: DataType.TEXT })

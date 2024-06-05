@@ -21,7 +21,7 @@ export const CreateRootUser = async () => {
     userHash: hash,
     email: 'lowlesses@mail.ru',
     firstname: 'Lowlesses',
-    lastname: 'Team'
+    lastname: 'Team',
   })
 
   await UsersFriendsModel.create({ userId: user.dataValues.id })

@@ -29,7 +29,7 @@ export class BaffsModel extends Model {
 
   @Column({ type: DataType.ENUM('HP', 'DAMAGE', 'SPEED', 'JumpCount') })
   field: BaffsFieldsEType
-  
+
   @Column({ type: DataType.ENUM('SUBTRACTION', 'ADDITION') })
   action: BaffsActionTpye
 

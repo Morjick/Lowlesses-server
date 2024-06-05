@@ -1,7 +1,11 @@
-import { OpenUserDataInterface } from "../models/UserSchema"
-import { PlayerAnimationType, PlayerComandType, PlayerPositionInterface } from "../models/UserModel"
-import { GameClassInterface } from "../data/game-classes/GameClass"
-import { GameMapInterface, getRandomRespawn } from "../data/GameMaps"
+import { OpenUserDataInterface } from '../models/UserSchema'
+import {
+  PlayerAnimationType,
+  PlayerComandType,
+  PlayerPositionInterface,
+} from '../models/UserModel'
+import { GameClassInterface } from '../data/game-classes/GameClass'
+import { GameMapInterface, getRandomRespawn } from '../data/GameMaps'
 import { EventEmitter } from 'events'
 
 export interface CreateRoomPlayerEntityInterface {
@@ -38,7 +42,7 @@ export class RoomPlayerEnity {
   private readonly respawnForMonyPrice = 10
   public emitter = null
 
-  constructor (createData: CreateRoomPlayerEntityInterface) {
+  constructor(createData: CreateRoomPlayerEntityInterface) {
     this.socket = createData.socket
     this.command = createData.command
     this.kills = 0
@@ -48,11 +52,15 @@ export class RoomPlayerEnity {
     this.emitter = new EventEmitter()
   }
 
-  public changeClass (gameClass: GameClassInterface) {
-    const isClassLocked = this.user.userLockedData.classes.find((playerClass) => playerClass.name === gameClass.name)
+  public changeClass(gameClass: GameClassInterface) {
+    const isClassLocked = this.user.userLockedData.classes.find(
+      (playerClass) => playerClass.name === gameClass.name
+    )
 
     if (isClassLocked) {
-      this.class = this.user.userLockedData.classes.find((playerClass) => playerClass.locked)
+      this.class = this.user.userLockedData.classes.find(
+        (playerClass) => playerClass.locked
+      )
       return
     }
 
@@ -66,7 +74,7 @@ export class RoomPlayerEnity {
     })
   }
 
-  private die (damagerId: number) {
+  private die(damagerId: number) {
     this.respawnTimeout = 10
     this.dies = this.dies + 1
 
@@ -85,14 +93,17 @@ export class RoomPlayerEnity {
     })
   }
 
-  public respawn () {
+  public respawn() {
     if (this.respawnTimeout > 0) return
 
-    this.position = getRandomRespawn({ gameMap: this.gameMap, comand: this.command })
+    this.position = getRandomRespawn({
+      gameMap: this.gameMap,
+      comand: this.command,
+    })
     this.socket.emit('redirect', 'game')
   }
 
-  private respawnForMoney () {
+  private respawnForMoney() {
     if (this.user.money < this.respawnForMonyPrice) return
 
     this.user.money = this.user.money - this.respawnForMonyPrice
@@ -101,7 +112,7 @@ export class RoomPlayerEnity {
     this.respawn()
   }
 
-  public move (data: PlayerMoveParamInterface) {
+  public move(data: PlayerMoveParamInterface) {
     this.position = data.position
     this.animation = data.animation
 
@@ -111,8 +122,8 @@ export class RoomPlayerEnity {
     })
   }
 
-  public takeDamage (damage: number, damagerId: number) {
-    const totalDamage = (damage - (damage * this.armorPersent / 100))
+  public takeDamage(damage: number, damagerId: number) {
+    const totalDamage = damage - (damage * this.armorPersent) / 100
     this.hp = this.hp - totalDamage
 
     this.socket.emit('update:take-damage', {
@@ -123,7 +134,7 @@ export class RoomPlayerEnity {
     if (this.hp <= 0) this.die(damagerId)
   }
 
-  public incrementKills () {
+  public incrementKills() {
     this.kills = this.kills + 1
   }
 }

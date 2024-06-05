@@ -1,5 +1,5 @@
 function getTransplit(text) {
-  let result = '';
+  let result = ''
   const converter = {
     а: 'a',
     б: 'b',
@@ -68,17 +68,17 @@ function getTransplit(text) {
     Э: 'E',
     Ю: 'Yu',
     Я: 'Ya',
-  };
+  }
 
   for (let i = 0; i < text.length; ++i) {
     if (converter[text[i]] == undefined) {
-      result += text[i];
+      result += text[i]
     } else {
-      result += converter[text[i]];
+      result += converter[text[i]]
     }
   }
 
-  return result.split(' ').join('-').toLocaleLowerCase();
+  return result.split(' ').join('-').toLocaleLowerCase()
 }
 
-export default getTransplit;
+export default getTransplit

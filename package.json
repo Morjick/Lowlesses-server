@@ -10,7 +10,8 @@
     "prestart": "npm run build",
     "server:watch": "ts-node-dev --respawn --transpile-only src/index.ts",
     "lint:fix": "eslint --cache --ext .ts . --fix",
-    "lint": "eslint --cache --ext .ts ."
+    "lint": "eslint --cache --ext .ts .",
+    "perttier": "npx prettier . --write"
   },
   "author": "Morjick <matvey-khramov@inbxo,ru>",
   "license": "ISC",
@@ -25,6 +26,7 @@
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-n": "^16.6.2",
     "eslint-plugin-promise": "^6.1.1",
+    "prettier": "^3.3.0",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.4.2"
   },

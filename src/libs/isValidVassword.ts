@@ -1,4 +1,4 @@
-import getTransplit from './getTranslate';
+import getTransplit from './getTranslate'
 
 export async function IsValidPassword(password: string, name?: string) {
   if (!password.split(' ').join('').length)
@@ -6,7 +6,7 @@ export async function IsValidPassword(password: string, name?: string) {
       message: 'Не используйте, пожалуйста, пробела',
       ok: false,
       warning: false,
-    };
+    }
 
   if (
     name &&
@@ -18,7 +18,7 @@ export async function IsValidPassword(password: string, name?: string) {
       message: 'Не используйте в качестве пароля своё имя, даже в транслите',
       ok: false,
       warning: false,
-    };
+    }
   }
 
   if (
@@ -32,7 +32,7 @@ export async function IsValidPassword(password: string, name?: string) {
         'Старайтесь избегать в пароле сочитания цифр от 1 до 9 и буквенно-строчные сочитания (например, qwerty). Так злоумышленник сможет легко Вас взломать',
       ok: false,
       warning: false,
-    };
+    }
 
   if (
     password.includes('password') ||
@@ -44,25 +44,25 @@ export async function IsValidPassword(password: string, name?: string) {
       message: 'Пароль слишком простой',
       ok: false,
       warning: false,
-    };
+    }
 
   if (password.includes('00'))
     return {
       message: 'Не советуется использовать год рождения',
       ok: true,
       warning: true,
-    };
+    }
 
   if (password.length < 6)
     return {
       message: 'Минимальная длинна пароля - 6 символов',
       ok: true,
       warning: true,
-    };
+    }
 
   return {
     message: 'Пароль отлично подошёл',
     ok: true,
     warning: false,
-  };
+  }
 }

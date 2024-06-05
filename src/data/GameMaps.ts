@@ -1,6 +1,6 @@
-import { GameModeInterface } from "../entities/RoomEntity";
-import { createRandomNumber } from "../libs/createRandomNumber";
-import { PlayerComandType, PlayerPositionInterface } from "../models/UserModel";
+import { GameModeInterface } from '../entities/RoomEntity'
+import { createRandomNumber } from '../libs/createRandomNumber'
+import { PlayerComandType, PlayerPositionInterface } from '../models/UserModel'
 
 export interface CoordsInterface {
   x: number
@@ -82,15 +82,15 @@ export const LavaCastleMap: GameMapInterface = {
       x: 0,
       y: 0,
       z: 0,
-      offsetZPosition: 5
+      offsetZPosition: 5,
     },
     rightBottom: {
       x: 100,
       y: 100,
       z: 100,
-      offsetZPosition: 5
+      offsetZPosition: 5,
     },
-  }
+  },
 }
 
 export const AbandonedCastleMap: GameMapInterface = {
@@ -151,22 +151,22 @@ export const AbandonedCastleMap: GameMapInterface = {
         comand: 'red',
         coords: { x: -200, y: -200 },
       },
-    ]
+    ],
   },
   borders: {
     leftTop: {
       x: 0,
       y: 0,
       z: 0,
-      offsetZPosition: 5
+      offsetZPosition: 5,
     },
     rightBottom: {
       x: 100,
       y: 100,
       z: 100,
-      offsetZPosition: 5
+      offsetZPosition: 5,
     },
-  }
+  },
 }
 
 export const DarkCastleMap: GameMapInterface = {
@@ -227,25 +227,27 @@ export const DarkCastleMap: GameMapInterface = {
         comand: 'red',
         coords: { x: -200, y: -200 },
       },
-    ]
+    ],
   },
   borders: {
     leftTop: {
       x: 0,
       y: 0,
       z: 0,
-      offsetZPosition: 5
+      offsetZPosition: 5,
     },
     rightBottom: {
       x: 100,
       y: 100,
       z: 100,
-      offsetZPosition: 5
+      offsetZPosition: 5,
     },
-  }
+  },
 }
 
-export const getRandomMap = (mapParams: CreateRandomMapParamInterface): GameMapInterface => {
+export const getRandomMap = (
+  mapParams: CreateRandomMapParamInterface
+): GameMapInterface => {
   const gameMaps = [LavaCastleMap, AbandonedCastleMap, DarkCastleMap]
 
   const suitableMaps = gameMaps.filter((map) => {
@@ -262,13 +264,15 @@ export const getRandomMap = (mapParams: CreateRandomMapParamInterface): GameMapI
   return suitableMaps[randomMapIndex]
 }
 
-export const getRandomRespawn = (param: GetRandomRespawnParamInterface): PlayerPositionInterface => {
+export const getRandomRespawn = (
+  param: GetRandomRespawnParamInterface
+): PlayerPositionInterface => {
   const respawns = param.gameMap.comandRespawns[param.comand]
 
   const randomRespawnIndex = createRandomNumber(0, respawns.length)
 
   return {
     ...respawns[randomRespawnIndex],
-    isFlipX: respawns[randomRespawnIndex].comand === 'red' ? false : true
+    isFlipX: respawns[randomRespawnIndex].comand === 'red' ? false : true,
   }
 }

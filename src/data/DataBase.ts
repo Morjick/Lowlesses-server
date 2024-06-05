@@ -1,16 +1,16 @@
-import { Sequelize } from "sequelize-typescript"
-import { UserModel, UsersFriendsModel } from "../models/UserSchema"
-import { FriendRelatedModel } from "../models/FriendRelatedModel"
-import { EquipmentModel } from "../models/EquipmentModel"
-import { CreateRootUser } from "./scripts/CreateRootUser"
-import { BaffsModel } from "../models/BaffsModel"
-import { GameSkillModel } from "../models/GameSkillModel"
-import { GameClassModel } from "../models/GameClassModel"
-import { NewsModel } from "../models/NewsModel"
-import { getGameClassesFromDB } from "./game-classes/GameClass"
-import { ForumThemeModel } from "../models/ForumThemeModel"
-import { ForumArticleModel } from "../models/ForumArticleModel"
-import { ForumCommentModel } from "../models/ForumCommentMode"
+import { Sequelize } from 'sequelize-typescript'
+import { UserModel, UsersFriendsModel } from '../models/UserSchema'
+import { FriendRelatedModel } from '../models/FriendRelatedModel'
+import { EquipmentModel } from '../models/EquipmentModel'
+import { CreateRootUser } from './scripts/CreateRootUser'
+import { BaffsModel } from '../models/BaffsModel'
+import { GameSkillModel } from '../models/GameSkillModel'
+import { GameClassModel } from '../models/GameClassModel'
+import { NewsModel } from '../models/NewsModel'
+import { getGameClassesFromDB } from './game-classes/GameClass'
+import { ForumThemeModel } from '../models/ForumThemeModel'
+import { ForumArticleModel } from '../models/ForumArticleModel'
+import { ForumCommentModel } from '../models/ForumCommentMode'
 
 require('dotenv').config()
 
@@ -31,49 +31,53 @@ const connectToDataBase = async (data: DataBaseConstructorInterface) => {
     USER: data.USER,
     PASSWORD: data.PASWORD,
     DB: data.DB,
-    dialect: "postgres",
+    dialect: 'postgres',
     pool: {
       max: 5,
       min: 0,
       acquire: 30000,
       idle: 10000,
-    }
+    },
   }
 
-  const database = new Sequelize(dataBaseConfig.DB, dataBaseConfig.USER, String(dataBaseConfig.PASSWORD), {
-    host: String(dataBaseConfig.HOST),
-    dialect: "postgres",
-    pool: {
-      max: dataBaseConfig.pool.max,
-      min: dataBaseConfig.pool.min,
-      acquire: dataBaseConfig.pool.acquire,
-      idle: dataBaseConfig.pool.idle
-    },
-    logging: false,
-    port: Number(data.PORT),
-    models: [
-      UserModel,
-      UsersFriendsModel,
-      FriendRelatedModel,
-      EquipmentModel,
-      BaffsModel,
-      GameSkillModel,
-      GameClassModel,
-      NewsModel,
-      ForumThemeModel,
-      ForumArticleModel,
-      ForumCommentModel,
-    ],
-  })
-
+  const database = new Sequelize(
+    dataBaseConfig.DB,
+    dataBaseConfig.USER,
+    String(dataBaseConfig.PASSWORD),
+    {
+      host: String(dataBaseConfig.HOST),
+      dialect: 'postgres',
+      pool: {
+        max: dataBaseConfig.pool.max,
+        min: dataBaseConfig.pool.min,
+        acquire: dataBaseConfig.pool.acquire,
+        idle: dataBaseConfig.pool.idle,
+      },
+      logging: false,
+      port: Number(data.PORT),
+      models: [
+        UserModel,
+        UsersFriendsModel,
+        FriendRelatedModel,
+        EquipmentModel,
+        BaffsModel,
+        GameSkillModel,
+        GameClassModel,
+        NewsModel,
+        ForumThemeModel,
+        ForumArticleModel,
+        ForumCommentModel,
+      ],
+    }
+  )
 
   try {
     await database.authenticate()
-    await database.sync({ alter: false, })
+    await database.sync({ alter: true })
     await CreateRootUser()
     await getGameClassesFromDB()
     // await createGameShop()
-  } catch(e) {
+  } catch (e) {
     console.error('Ошибка при подключении к базе данных', e)
     throw new Error(e)
   }
@@ -83,4 +87,9 @@ const connectToDataBase = async (data: DataBaseConstructorInterface) => {
   }
 }
 
-export { connectToDataBase, type DataBaseConstructorInterface, connectionString, secretKey }
+export {
+  connectToDataBase,
+  type DataBaseConstructorInterface,
+  connectionString,
+  secretKey,
+}

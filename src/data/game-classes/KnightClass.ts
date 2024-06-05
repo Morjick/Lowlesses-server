@@ -1,4 +1,8 @@
-import { GameClassInterface, GameClassSkillInterface, GameSkillEffectParamsInterface } from "./GameClass";
+import {
+  GameClassInterface,
+  GameClassSkillInterface,
+  GameSkillEffectParamsInterface,
+} from './GameClass'
 
 export const KnightClassSkills: GameClassSkillInterface[] = [
   {
@@ -9,7 +13,7 @@ export const KnightClassSkills: GameClassSkillInterface[] = [
     skillLevel: 0,
     isHaveEffect: true,
     effect: (gameData: GameSkillEffectParamsInterface) => {},
-    skillPrice: 500
+    skillPrice: 500,
   },
   {
     name: 'A whirlwind of blades',
@@ -19,7 +23,7 @@ export const KnightClassSkills: GameClassSkillInterface[] = [
     skillLevel: 0,
     isHaveEffect: false,
     effect: (gameData: GameSkillEffectParamsInterface) => {},
-    skillPrice: 1000
+    skillPrice: 1000,
   },
 ]
 
@@ -29,5 +33,5 @@ export const KnightClass: GameClassInterface = {
   speed: 4,
   attackPower: 40,
   skills: KnightClassSkills,
-  classPrice: 800
+  classPrice: 800,
 }

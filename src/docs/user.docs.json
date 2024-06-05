@@ -14,8 +14,18 @@
         "tags": ["/create-user"],
         "description": "Создать пользователя",
         "parameters": [
-          { "name": "username", "in": "formData", "required": true, "type": "string" },
-          { "name": "password", "in": "formData", "required": true, "type": "string" }
+          {
+            "name": "username",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "password",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          }
         ],
         "responses": {}
       }
@@ -27,14 +37,54 @@
         "tags": ["/update-user"],
         "description": "Создать пользователя",
         "parameters": [
-          { "name": "username", "in": "formData", "required": true, "type": "string" },
-          { "name": "firstname", "in": "formData", "required": true, "type": "string" },
-          { "name": "lastname", "in": "formData", "required": true, "type": "string" },
-          { "name": "patronomic", "in": "formData", "required": true, "type": "string" },
-          { "name": "telegram", "in": "formData", "required": true, "type": "string" },
-          { "name": "vk", "in": "formData", "required": true, "type": "string" },
-          { "name": "whatsapp", "in": "formData", "required": true, "type": "string" },
-          { "name": "discord", "in": "formData", "required": true, "type": "string" }
+          {
+            "name": "username",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "firstname",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "lastname",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "patronomic",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "telegram",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "vk",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "whatsapp",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "discord",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          }
         ],
         "responses": {}
       }
@@ -46,8 +96,18 @@
         "tags": ["/login"],
         "description": "Авторизоваться",
         "parameters": [
-          { "name": "username", "in": "formData", "required": true, "type": "string" },
-          { "name": "password", "in": "formData", "required": true, "type": "string" }
+          {
+            "name": "username",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "password",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          }
         ],
         "responses": {}
       }
@@ -59,7 +119,12 @@
         "tags": ["/check-token"],
         "description": "Проверить токен на валидность и время действия",
         "parameters": [
-          { "name": "token", "in": "formData", "required": true, "type": "string" }
+          {
+            "name": "token",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          }
         ],
         "responses": {}
       }
@@ -71,7 +136,12 @@
         "tags": ["For Admin User"],
         "description": "Установить хэш пользователя, который пригласил в игру",
         "parameters": [
-          { "name": "invitedHash", "in": "formData", "required": true, "type": "string" }
+          {
+            "name": "invitedHash",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          }
         ],
         "responses": {}
       }
@@ -83,7 +153,13 @@
         "tags": ["For Admin User"],
         "description": "Установить роль",
         "parameters": [
-          { "name": "role", "in": "formData", "required": true, "type": "string", "enum": ["USER", "ADMIN", "ROOT", "MODERATOR"] }
+          {
+            "name": "role",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "enum": ["USER", "ADMIN", "ROOT", "MODERATOR"]
+          }
         ],
         "responses": {}
       }

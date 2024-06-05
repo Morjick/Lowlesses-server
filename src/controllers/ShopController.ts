@@ -1,21 +1,32 @@
-import { Body, Delete, Get, HeaderParam, JsonController, Param, Post, UseBefore } from "routing-controllers";
-import { checkToken } from "../libs/checkAuth";
-import { CreateEquipmentItemInterface, EquipmentModel } from "../models/EquipmentModel";
-import { AdminMiddleware } from "../middleware/AdminMiddleware";
-import { BaffsModel, CreateBaffInterface } from "../models/BaffsModel";
+import {
+  Body,
+  Delete,
+  Get,
+  JsonController,
+  Param,
+  Post,
+  UseBefore,
+} from 'routing-controllers'
+import {
+  CreateEquipmentItemInterface,
+  EquipmentModel,
+} from '../models/EquipmentModel'
+import { AdminMiddleware } from '../middleware/AdminMiddleware'
+import { BaffsModel, CreateBaffInterface } from '../models/BaffsModel'
 
 @JsonController('/shop')
 export class ShopController {
-
   @Post('/create-equipment')
   @UseBefore(AdminMiddleware)
-  async createItem(@Body() body: CreateEquipmentItemInterface, @HeaderParam("Authorization", { type: "string" }) token) {
+  async createItem(
+    @Body() body: CreateEquipmentItemInterface,
+  ) {
     try {
       const item = await EquipmentModel.create({
         title: body.title,
         price: body.price,
         discount: body.discount ? body.discount : 0,
-        equipmentType: body.type
+        equipmentType: body.type,
       })
 
       body.baffs.forEach(async (baff) => {
@@ -23,7 +34,7 @@ export class ShopController {
           field: baff.field,
           value: baff.value,
           action: baff.action,
-          equipmentId: item.dataValues.id
+          equipmentId: item.dataValues.id,
         })
       })
 
@@ -31,27 +42,30 @@ export class ShopController {
         status: 200,
         message: 'OK',
         body: {
-          item: item.dataValues
-        }
+          item: item.dataValues,
+        },
       }
-    } catch(e) {
+    } catch (e) {
       console.log(e)
     }
   }
 
   @Post('/create-baff')
   @UseBefore(AdminMiddleware)
-  async createBaff (@Body() body: CreateBaffInterface) {
+  async createBaff(@Body() body: CreateBaffInterface) {
     const { field, value, action } = body
 
-    if (!field || !value || !action) return {
-      status: 403,
-      message: 'Для создания бафа необходимо указать все параметры',
-      error: 'Для создания бафа необходимо указать все параметры',
-    }
+    if (!field || !value || !action)
+      return {
+        status: 403,
+        message: 'Для создания бафа необходимо указать все параметры',
+        error: 'Для создания бафа необходимо указать все параметры',
+      }
 
     const baff = await BaffsModel.create({
-      field, value, action
+      field,
+      value,
+      action,
     })
 
     return {
@@ -59,28 +73,30 @@ export class ShopController {
       message: 'Баф успешно добавлен в игру',
       body: {
         id: baff.dataValues.id,
-        baff: baff.dataValues
-      }
+        baff: baff.dataValues,
+      },
     }
   }
 
   @Get('/get-shop', { transformResponse: false })
-  async getShop () {
+  async getShop() {
     try {
-      const shop = await EquipmentModel.findAll({ include: { all: true, nested: true } })
+      const shop = await EquipmentModel.findAll({
+        include: { all: true, nested: true },
+      })
 
       return {
         status: 200,
         message: 'Магазин успешно получен',
         body: {
-          shop
-        }
+          shop,
+        },
       }
-    } catch(e) {
+    } catch (e) {
       return {
         status: 501,
         error: e,
-        message: 'Произошла ошибка при попытке получить товары'
+        message: 'Произошла ошибка при попытке получить товары',
       }
     }
   }
@@ -92,7 +108,7 @@ export class ShopController {
 
     return {
       status: 200,
-      message: 'Предмет был удалён'
+      message: 'Предмет был удалён',
     }
   }
 }

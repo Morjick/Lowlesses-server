@@ -1,15 +1,28 @@
-import { Body, Post, Get, JsonController, UseBefore, Req, QueryParams, Param, Params, Delete } from 'routing-controllers'
+import {
+  Body,
+  Post,
+  Get,
+  JsonController,
+  UseBefore,
+  Req,
+  QueryParams,
+  Param,
+  Params,
+  Delete,
+} from 'routing-controllers'
 import { AuthMiddleware } from '../middleware/AuthMiddleware'
-import { CreateNewsItemDataInterface, UpdateNewsDataInterface } from '../data/contracts/news.contracts'
+import {
+  CreateNewsItemDataInterface,
+  UpdateNewsDataInterface,
+} from '../data/contracts/news.contracts'
 import getTransplit from '../libs/getTranslate'
 import { NewsModel } from '../models/NewsModel'
 import { LocaleListType } from '../data/contracts/global.contracts'
 import { UserModel } from '../models/UserModel'
 import { AdminMiddleware } from '../middleware/AdminMiddleware'
 
-@JsonController ('/news')
+@JsonController('/news')
 export class NewsController {
-
   @Post('/create')
   @UseBefore(AdminMiddleware)
   async createNews(@Body() body: CreateNewsItemDataInterface, @Req() request) {
@@ -19,7 +32,8 @@ export class NewsController {
       return {
         status: 501,
         message: 'Длинна заголовка должна быть не менее 5 символов',
-        error: 'Invalid params error: length of the title must be more than 5 characters'
+        error:
+          'Invalid params error: length of the title must be more than 5 characters',
       }
     }
 
@@ -36,23 +50,24 @@ export class NewsController {
       status: 200,
       message: 'Новость успешно создана',
       body: {
-        news: news.dataValues
-      }
+        news: news.dataValues,
+      },
     }
   }
 
   @Post('/update-news/:slug')
   @UseBefore(AuthMiddleware)
-  async updateNews (@Body() body: UpdateNewsDataInterface, @Params() params) {
+  async updateNews(@Body() body: UpdateNewsDataInterface, @Params() params) {
     const slug: string = params.slug
 
     const candidate = await NewsModel.findOne({ where: { slug } })
 
-    if (!candidate) return {
-      status: 404,
-      message: 'Новость с таким SLUG не найдена',
-      error: 'NotFound'
-    }
+    if (!candidate)
+      return {
+        status: 404,
+        message: 'Новость с таким SLUG не найдена',
+        error: 'NotFound',
+      }
 
     const updated = await NewsModel.update({ ...body }, { where: { slug } })
 
@@ -60,58 +75,57 @@ export class NewsController {
       status: 200,
       message: 'Новость успешно отредактирована',
       body: {
-        updated
-      }
+        updated,
+      },
     }
   }
 
   @Get('/get-news/:slug')
-  async getNewsItem (@QueryParams() query, @Params() params) {
+  async getNewsItem(@QueryParams() query, @Params() params) {
     const locale: LocaleListType = query.locale || 'ru-RU'
     const slug: string = params.slug
 
-    const news = await NewsModel.findOne(
-      { 
-        where: { slug, isShow: true },
-        attributes: [
-          'id',
-          [locale === 'ru-RU' ? 'titleRU' : 'titleEN', 'title'],
-          [locale === 'ru-RU' ? 'bodyRU' : 'bodyEN', 'body'],
-          [locale === 'ru-RU' ? 'descriptionRU' : 'descriptionEN', 'description'],
-          'autorId',
-          // 'autor',
-          'publicData',
-          'slug',
-          'avatar',
-          'tags',
-          'createdAt',
-        ],
-        include: [
-          {
-            model: UserModel,
-            as: 'autor',
-            attributes: [
-              'username',
-              'id',
-              'isOnline',
-              'role',
-              'firstname',
-              'lastname',
-              'patronomic',
-              'email',
-              'slug',
-              'developerRoleRU',
-            ]
-          }
-        ],
-      },
-    )
+    const news = await NewsModel.findOne({
+      where: { slug, isShow: true },
+      attributes: [
+        'id',
+        [locale === 'ru-RU' ? 'titleRU' : 'titleEN', 'title'],
+        [locale === 'ru-RU' ? 'bodyRU' : 'bodyEN', 'body'],
+        [locale === 'ru-RU' ? 'descriptionRU' : 'descriptionEN', 'description'],
+        'autorId',
+        // 'autor',
+        'publicData',
+        'slug',
+        'avatar',
+        'tags',
+        'createdAt',
+      ],
+      include: [
+        {
+          model: UserModel,
+          as: 'autor',
+          attributes: [
+            'username',
+            'id',
+            'isOnline',
+            'role',
+            'firstname',
+            'lastname',
+            'patronomic',
+            'email',
+            'slug',
+            'developerRoleRU',
+          ],
+        },
+      ],
+    })
 
-    if (!news) return {
-      status: 404,
-      message: 'Новость не найдена',
-      error: 'NotFound'
-    }
+    if (!news)
+      return {
+        status: 404,
+        message: 'Новость не найдена',
+        error: 'NotFound',
+      }
 
     return {
       status: 200,
@@ -121,8 +135,8 @@ export class NewsController {
           ...news.dataValues,
           // autor: autor.dataValues,
         },
-        locale
-      }
+        locale,
+      },
     }
   }
 
@@ -131,47 +145,50 @@ export class NewsController {
   async getNewsForEdit(@Params() params) {
     const slug: string = params.slug
 
-    const news = await NewsModel.findOne(
-      { 
-        where: { slug, isShow: true },
-        attributes: [
-          'id',
-          'titleRU', 'titleEN',
-          'bodyRU', 'bodyEN',
-          'descriptionRU', 'descriptionEN',
-          'autorId',
-          'publicData',
-          'slug',
-          'avatar',
-          'tags',
-          'createdAt',
-          'isShow',
-        ],
-        include: [
-          {
-            model: UserModel,
-            as: 'autor',
-            attributes: [
-              'username',
-              'id',
-              'isOnline',
-              'role',
-              'firstname',
-              'lastname',
-              'patronomic',
-              'email',
-              'slug',
-              'developerRoleRU',
-            ]
-          }
-        ],
+    const news = await NewsModel.findOne({
+      where: { slug, isShow: true },
+      attributes: [
+        'id',
+        'titleRU',
+        'titleEN',
+        'bodyRU',
+        'bodyEN',
+        'descriptionRU',
+        'descriptionEN',
+        'autorId',
+        'publicData',
+        'slug',
+        'avatar',
+        'tags',
+        'createdAt',
+        'isShow',
+      ],
+      include: [
+        {
+          model: UserModel,
+          as: 'autor',
+          attributes: [
+            'username',
+            'id',
+            'isOnline',
+            'role',
+            'firstname',
+            'lastname',
+            'patronomic',
+            'email',
+            'slug',
+            'developerRoleRU',
+          ],
+        },
+      ],
     })
 
-    if (!news) return {
-      status: 404,
-      message: 'Новость не найдена',
-      error: 'NotFound'
-    }
+    if (!news)
+      return {
+        status: 404,
+        message: 'Новость не найдена',
+        error: 'NotFound',
+      }
 
     return {
       status: 200,
@@ -181,16 +198,13 @@ export class NewsController {
           ...news.dataValues,
           // autor: autor.dataValues,
         },
-      }
+      },
     }
   }
 
   @Get('/get-many')
-  async getManyNews (@QueryParams() query,) {
-    const {
-      limit = 5,
-      offset = 0,
-    } = query
+  async getManyNews(@QueryParams() query) {
+    const { limit = 5, offset = 0 } = query
 
     const locale: LocaleListType = query.locale || 'ru-RU'
 
@@ -205,7 +219,7 @@ export class NewsController {
         'publicData',
         'slug',
         'avatar',
-        'tags'
+        'tags',
       ],
       order: [['createdAt', 'DESC']],
       include: [
@@ -221,15 +235,18 @@ export class NewsController {
             'lastname',
             'patronomic',
             'email',
-          ]
-        }
+          ],
+        },
       ],
-      limit, offset,
+      limit,
+      offset,
     })
 
-    const newsCount = await NewsModel.count({ where: { isShow: true }, })
+    const newsCount = await NewsModel.count({ where: { isShow: true } })
 
-    const pages = Math.ceil(newsCount / limit > 1 ? Math.ceil(newsCount) / limit : 1)
+    const pages = Math.ceil(
+      newsCount / limit > 1 ? Math.ceil(newsCount) / limit : 1
+    )
     const activePage = Math.ceil(offset / limit)
       ? Math.ceil(offset / limit) + 1
       : 1
@@ -239,10 +256,10 @@ export class NewsController {
       status: 200,
       message: 'Список новостей получен',
       body: {
-        news: news.map(el => {
+        news: news.map((el) => {
           return {
             ...el.dataValues,
-            autor: el.dataValues?.autor?.dataValues
+            autor: el.dataValues?.autor?.dataValues,
           }
         }),
         pagination: {
@@ -251,8 +268,8 @@ export class NewsController {
           isPrevPageAvaible: Boolean(activePage - 1 > 0),
           activePage,
           totalPages: pages,
-        }
-      }
+        },
+      },
     }
   }
 
@@ -265,22 +282,22 @@ export class NewsController {
       status: 200,
       message: 'Скрытые новости получены',
       body: {
-        news: news.map(el => el.dataValues),
+        news: news.map((el) => el.dataValues),
       },
     }
   }
 
   @Delete('/:slug')
   @UseBefore(AuthMiddleware)
-  async deleteNews (@Param('slug') slug: string) {
+  async deleteNews(@Param('slug') slug: string) {
     const newsID = await NewsModel.destroy({ where: { slug } })
 
     return {
       message: 'Новость была удалена',
       status: 200,
       body: {
-        deletedNewsID: newsID
-      }
+        deletedNewsID: newsID,
+      },
     }
   }
 }

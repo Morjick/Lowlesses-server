@@ -1,10 +1,14 @@
-import { checkToken } from "../libs/checkAuth"
+import { checkToken } from '../libs/checkAuth'
 
-export const AuthMiddleware = async (request: any, response: any, next?: (err?: any) => any) => {
+export const AuthMiddleware = async (
+  request: any,
+  response: any,
+  next?: (err?: any) => any
+) => {
   try {
     const token = request.headers.authorization
 
-    const { user, ok, message, error, status } = await checkToken(token)
+    const { user, ok } = await checkToken(token)
 
     if (!user || !ok) {
       throw new Error()
@@ -14,12 +18,12 @@ export const AuthMiddleware = async (request: any, response: any, next?: (err?: 
 
     request.user = user
     next()
-  } catch(e) {
+  } catch (e) {
     const error = response.status(401).json({
       ok: false,
       status: 401,
-      message: "Для этого запроса необходимо авторизоваться",
-      error: "Для этого запроса необходимо авторизоваться",
+      message: 'Для этого запроса необходимо авторизоваться',
+      error: 'Для этого запроса необходимо авторизоваться',
     })
     next(error)
   }

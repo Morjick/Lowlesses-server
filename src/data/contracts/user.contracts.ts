@@ -1,4 +1,4 @@
-import { UserRoleType } from './../../models/UserModel';
+import { UserRoleType } from './../../models/UserModel'
 import { CreateUserInterface } from '../../models/UserSchema'
 
 export interface UpdateUserFromAdminInterface extends CreateUserInterface {

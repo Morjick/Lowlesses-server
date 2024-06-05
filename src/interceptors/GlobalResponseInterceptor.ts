@@ -1,5 +1,10 @@
-import { response } from 'express';
-import { Interceptor, InterceptorInterface, Action, HttpCode } from 'routing-controllers';
+import { response } from 'express'
+import {
+  Interceptor,
+  InterceptorInterface,
+  Action,
+  HttpCode,
+} from 'routing-controllers'
 
 interface ContentInterface {
   status: number
@@ -14,7 +19,7 @@ export class GlobalResponseInterceptor implements InterceptorInterface {
     if (!content?.status) {
       return {
         status: 501,
-        message: 'Неожиданная ошибка сервера, попробуйте позже'
+        message: 'Неожиданная ошибка сервера, попробуйте позже',
       }
     }
 
@@ -23,11 +28,11 @@ export class GlobalResponseInterceptor implements InterceptorInterface {
       statusCode: content.status || 501,
       message: content.message,
       body: content.body,
-      error: content.error?.length ? 
-        content.error : 
-        content.status >= 300 ? 
-          'Неожиданная ошибка сервера, попробуйте позже' : 
-          null 
+      error: content.error?.length
+        ? content.error
+        : content.status >= 300
+          ? 'Неожиданная ошибка сервера, попробуйте позже'
+          : null,
     }
 
     action.response.status(content.status)

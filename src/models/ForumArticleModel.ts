@@ -1,6 +1,6 @@
-import { ForumCommentModel } from './ForumCommentMode';
-import { ForumThemeModel } from './ForumThemeModel';
-import { UserModel } from './UserModel';
+import { ForumCommentModel } from './ForumCommentMode'
+import { ForumThemeModel } from './ForumThemeModel'
+import { UserModel } from './UserModel'
 import {
   Table,
   Column,
@@ -12,7 +12,6 @@ import {
 } from 'sequelize-typescript'
 import { EquipmentModel } from './EquipmentModel'
 import { LocaleListType } from '../data/contracts/global.contracts'
-
 
 @Table
 export class ForumArticleModel extends Model {

@@ -5,11 +5,8 @@ import {
   DataType,
   ForeignKey,
   BelongsTo,
-  HasMany,
 } from 'sequelize-typescript'
 import { UserModel } from './UserSchema'
-import { ForumArticleModel } from './ForumArticleModel'
-
 
 @Table
 export class ForumCommentModel extends Model {
@@ -38,6 +35,12 @@ export class ForumCommentModel extends Model {
 
   @Column({ type: DataType.INTEGER })
   dislikes: number
+
+  @Column({ type: DataType.ARRAY(DataType.INTEGER) })
+  likersID: number[]
+
+  @Column({ type: DataType.ARRAY(DataType.INTEGER) })
+  dislikersID: number[]
 
   @Column({ type: DataType.INTEGER })
   articleId: number

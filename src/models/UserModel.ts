@@ -1,4 +1,4 @@
-import { connectionString } from "../data/DataBase"
+import { connectionString } from '../data/DataBase'
 import {
   Table,
   Column,
@@ -8,10 +8,14 @@ import {
   BelongsTo,
   HasMany,
 } from 'sequelize-typescript'
-import { UsersFriendsModel } from "./UserFriendsModel"
-import { OpenUserDataInterface } from "./UserSchema"
-import { CoordsInterface } from "../data/GameMaps"
-import { GameClassInterface, GameClasses, PlayerClassType } from "../data/game-classes/GameClass"
+import { UsersFriendsModel } from './UserFriendsModel'
+import { OpenUserDataInterface } from './UserSchema'
+import { CoordsInterface } from '../data/GameMaps'
+import {
+  GameClassInterface,
+  GameClasses,
+  PlayerClassType,
+} from '../data/game-classes/GameClass'
 
 export type UserRoleType = 'USER' | 'ADMIN' | 'ROOT' | 'MODERATOR'
 export type PlayerStatusTpye = 'online' | 'ofline'
@@ -35,7 +39,7 @@ export interface PlayerInterface {
 }
 
 export const userGameClassData = {
-  classes: []
+  classes: [],
 }
 
 @Table
@@ -68,7 +72,7 @@ export class UserModel extends Model {
 
   @Column({
     type: DataType.ENUM('USER', 'ADMIN', 'ROOT', 'MODERATOR'),
-    defaultValue: 'USER'
+    defaultValue: 'USER',
   })
   role: UserRoleType
 
@@ -94,7 +98,10 @@ export class UserModel extends Model {
   @Column({ type: DataType.DATE })
   endVIPDate: string
 
-  @Column({ type: DataType.JSON, defaultValue: JSON.stringify(userGameClassData) })
+  @Column({
+    type: DataType.JSON,
+    defaultValue: JSON.stringify(userGameClassData),
+  })
   userLockedData: string
 
   @Column({ type: DataType.STRING })

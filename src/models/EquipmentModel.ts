@@ -29,7 +29,7 @@ export class EquipmentModel extends Model {
   })
   id: number
 
-  @Column({ type: DataType.STRING, unique: true, })
+  @Column({ type: DataType.STRING, unique: true })
   title: string
 
   @Column({ type: DataType.INTEGER })
@@ -45,9 +45,9 @@ export class EquipmentModel extends Model {
   avatar: string
 
   @HasMany(() => BaffsModel, {
-    onUpdate: "CASCADE",
-    onDelete: "CASCADE",
-    hooks: true
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+    hooks: true,
   })
   bonus: BaffsModel[]
 }

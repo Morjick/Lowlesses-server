@@ -1,6 +1,6 @@
-import { AdminDeveloperRoleType } from "../contracts/user.contracts";
+import { AdminDeveloperRoleType } from '../contracts/user.contracts'
 
 export const developerRoleList: AdminDeveloperRoleType[] = [
   'Программист',
-  'Художник'
+  'Художник',
 ]

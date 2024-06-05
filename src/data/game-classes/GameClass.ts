@@ -1,11 +1,21 @@
-import { GameClassModel } from "../../models/GameClassModel"
-import { GameRoomPlayerInterface } from "../../entities/RoomEntity"
-import { ArcherClass } from "./ArcherClass"
-import { KnightClass } from "./KnightClass"
-import { OpenUserDataInterface } from "../../models/UserSchema"
-import { GameSkillModel } from "../../models/GameSkillModel"
+import { GameClassModel } from '../../models/GameClassModel'
+import { GameRoomPlayerInterface } from '../../entities/RoomEntity'
+import { ArcherClass } from './ArcherClass'
+import { KnightClass } from './KnightClass'
+import { OpenUserDataInterface } from '../../models/UserSchema'
+import { GameSkillModel } from '../../models/GameSkillModel'
 
-export type PlayerClassType = 'KNIGHT' | 'PRIEST' | 'ARCHER' | 'PALADIN' | 'ROGUE' | 'BARBARIAN' | 'MAGE' | 'WARLOCK' | 'DRUID' | 'SHAMAN'
+export type PlayerClassType =
+  | 'KNIGHT'
+  | 'PRIEST'
+  | 'ARCHER'
+  | 'PALADIN'
+  | 'ROGUE'
+  | 'BARBARIAN'
+  | 'MAGE'
+  | 'WARLOCK'
+  | 'DRUID'
+  | 'SHAMAN'
 export type SkillLevelType = 0 | 1 | 2 | 3
 
 export interface GameSkillEffectParamsInterface {
@@ -45,10 +55,12 @@ export const getClassForName = (className: string): GameClassInterface => {
 }
 
 export const getGameClassesFromDB = async () => {
-  const gameClassesModels = await GameClassModel.findAll({ include: {
-    all: true,
-    nested: true,
-  } })
+  const gameClassesModels = await GameClassModel.findAll({
+    include: {
+      all: true,
+      nested: true,
+    },
+  })
 
   gameClassesModels.forEach((gameClassModel) => {
     const gameClass = gameClassModel.dataValues
@@ -56,7 +68,7 @@ export const getGameClassesFromDB = async () => {
 
     GameClasses.push({
       ...gameClass,
-      skills
+      skills,
     })
   })
 
@@ -65,13 +77,17 @@ export const getGameClassesFromDB = async () => {
 
 export const getGamseClassesFromUser = (user: OpenUserDataInterface) => {
   return GameClasses.map((gameClass) => {
-    const isGameClassExist = user.userLockedData.classes.find((writedClass) => writedClass.name === gameClass.name)
+    const isGameClassExist = user.userLockedData.classes.find(
+      (writedClass) => writedClass.name === gameClass.name
+    )
 
     if (isGameClassExist) {
       if (isGameClassExist.locked === undefined) {
         return {
           ...isGameClassExist,
-          skills: isGameClassExist.skills.map((skill) => { return { ...skill, locked: true } })
+          skills: isGameClassExist.skills.map((skill) => {
+            return { ...skill, locked: true }
+          }),
         }
       }
 
@@ -81,10 +97,12 @@ export const getGamseClassesFromUser = (user: OpenUserDataInterface) => {
     return {
       ...gameClass,
       locked: true,
-      skills: gameClass.skills.map((skill) => { return {
-        ...skill,
-        locked: true
-      }})
+      skills: gameClass.skills.map((skill) => {
+        return {
+          ...skill,
+          locked: true,
+        }
+      }),
     }
   })
 }

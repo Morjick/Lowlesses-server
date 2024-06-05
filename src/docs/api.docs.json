@@ -1,0 +1,671 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Lowlesses User API",
+    "description": "Тут описаны методы для взаимодействия с сущностью пользователя",
+    "version": "1.0"
+  },
+  "produces": ["application/json"],
+  "paths": {
+    "/create-user": {
+      "post": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/user"],
+        "description": "Создать пользователя",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "password",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/update-user": {
+      "post": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/user"],
+        "description": "Создать пользователя",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "firstname",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "lastname",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "patronomic",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "telegram",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "vk",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "whatsapp",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "discord",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/login": {
+      "post": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/user"],
+        "description": "Авторизоваться",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "password",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/check-token": {
+      "post": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/user"],
+        "description": "Проверить токен на валидность и время действия",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/set-user-hash": {
+      "post": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/user"],
+        "description": "Установить хэш пользователя, который пригласил в игру",
+        "parameters": [
+          {
+            "name": "invitedHash",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/set-user-role": {
+      "post": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/user"],
+        "description": "Установить роль",
+        "parameters": [
+          {
+            "name": "role",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "enum": ["USER", "ADMIN", "ROOT", "MODERATOR"]
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/get-developer-roles": {
+      "get": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/user"],
+        "description": "Получить список ролей разработчиков",
+        "responses": {}
+      }
+    },
+    "/create-theme": {
+      "post": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/forum"],
+        "description": "Создать тему",
+        "parameters": [
+          {
+            "name": "titleRU",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "titleEN",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "descriptionRU",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "descriptionEN",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "avatar",
+            "in": "formData",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "tags",
+            "in": "formData",
+            "required": true,
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/create-article": {
+      "post": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/forum"],
+        "description": "Создать статью",
+        "parameters": [
+          {
+            "name": "title",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "description",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "themeId",
+            "in": "formData",
+            "required": true,
+            "type": "number"
+          },
+          {
+            "name": "locale",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "enum": ["ru-RU", "en-EN"]
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/estimate-comment/:id": {
+      "post": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/forum"],
+        "description": "Оценить комментарий",
+        "parameters": [
+          {
+            "name": "actions",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "enum": ["like", "dislike", null]
+          }
+        ]
+      }
+    },
+    "/get-themes": {
+      "get": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/forum"],
+        "description": "Получить темы форума",
+        "parameters": [
+          {
+            "name": "locale",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "enum": ["ru-RU", "en-EN"]
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/get-articles": {
+      "get": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/forum"],
+        "description": "Получить список новостей",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "formData",
+            "required": true,
+            "type": "number"
+          },
+          {
+            "name": "offset",
+            "in": "formData",
+            "required": true,
+            "type": "number"
+          },
+          {
+            "name": "themeId",
+            "in": "formData",
+            "required": true,
+            "type": "number"
+          },
+          {
+            "name": "locale",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "enum": ["ru-RU", "en-EN"]
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/get-articles/:slug": {
+      "get": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/forum"],
+        "description": "Получить новость по ссылке",
+        "parameters": [
+          { "name": "slug", "in": "formData", "required": true, "type": "slug" }
+        ],
+        "responses": {}
+      }
+    },
+    "/delete-article/slug": {
+      "delete": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/forum"],
+        "description": "Удалить новость",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "formData",
+            "required": true,
+            "type": "number"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/send-comment": {
+      "post": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/forum"],
+        "description": "Оставить комментарий к статье",
+        "parameters": [
+          {
+            "message": "slug",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/moderate-comment/:id": {
+      "post": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/forum"],
+        "description": "Оставить комментарий к статье",
+        "parameters": [
+          {
+            "message": "id",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/delete-comment/:id": {
+      "delete": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/forum"],
+        "description": "Оставить комментарий к статье",
+        "parameters": [
+          {
+            "message": "id",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/get-comments-on-moderate": {
+      "get": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/forum"],
+        "description": "Получить список комментариев без модерации",
+        "parameters": [],
+        "responses": {}
+      }
+    },
+    "/get-count-moderate-comments": {
+      "get": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/forum"],
+        "description": "Получить число комментариев без модерации",
+        "parameters": [],
+        "responses": {}
+      }
+    },
+    "/create": {
+      "post": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/news"],
+        "description": "Создать новость",
+        "parameters": [
+          {
+            "name": "titleRU",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "titleEN",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "bodyRU",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "bodyEN",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "descriptionRU",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "descriptionEN",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "isShow",
+            "in": "formData",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "avatar",
+            "in": "formData",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "tags",
+            "in": "formData",
+            "required": true,
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/update-news/:slug": {
+      "post": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/news"],
+        "description": "Изменить новость",
+        "parameters": [
+          {
+            "name": "titleRU",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "titleEN",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "bodyRU",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "bodyEN",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "descriptionRU",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "descriptionEN",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "isShow",
+            "in": "formData",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "avatar",
+            "in": "formData",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "tags",
+            "in": "formData",
+            "required": true,
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          {
+            "name": "slug",
+            "in": "formData",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "id",
+            "in": "formData",
+            "required": false,
+            "type": "number"
+          },
+          {
+            "name": "autorId",
+            "in": "formData",
+            "required": false,
+            "type": "number"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/get-news-edit/:slug": {
+      "get": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/news"],
+        "description": "Получить новость по ссылке для редактирования",
+        "responses": {}
+      }
+    },
+    "/get-hidden": {
+      "get": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/news"],
+        "description": "Получить скрытые новость",
+        "responses": {}
+      }
+    },
+    "/get-news/:slug": {
+      "get": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/news"],
+        "description": "Получить новость по ссылке",
+        "parameters": [
+          {
+            "name": "locale",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "enum": ["ru-RU", "en-EN"]
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/get-many": {
+      "get": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/news"],
+        "description": "Получить список новостей",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "offset",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "locale",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "enum": ["ru-RU", "en-EN"]
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/:slug": {
+      "delete": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/news"],
+        "description": "Удалить новость",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      }
+    }
+  }
+}

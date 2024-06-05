@@ -1,25 +1,23 @@
 // docs
 const swagger = require('swagger-ui-express')
-const UserDocs = require('./docs/user.docs.json')
-const NewsDocs = require('./docs/news.docs.json')
-const ForumDocs = require('./docs/forum.docs.json')
+const ApiDocs = require('./docs/api.docs.json')
 
 // static
-const multer  = require('multer')
+const multer = require('multer')
 import * as path from 'path'
 
 // modules
-import { createExpressServer } from "routing-controllers"
-import { UserController } from "./controllers/UserController"
-import { GlobalResponseInterceptor } from "./interceptors/GlobalResponseInterceptor"
-import { SocketControllers } from "socket-controllers"
-import { OnlineController } from "./controllers/OnlineController"
-import { Container } from "typedi"
-import { connectToDataBase } from "./data/DataBase"
-import { ShopController } from "./controllers/ShopController"
-import { HeroesController } from "./controllers/HeroesController"
-import { NewsController } from "./controllers/NewsController"
-import { ForumController } from "./controllers/ForumController"
+import { createExpressServer } from 'routing-controllers'
+import { UserController } from './controllers/UserController'
+import { GlobalResponseInterceptor } from './interceptors/GlobalResponseInterceptor'
+import { SocketControllers } from 'socket-controllers'
+import { OnlineController } from './controllers/OnlineController'
+import { Container } from 'typedi'
+import { connectToDataBase } from './data/DataBase'
+import { ShopController } from './controllers/ShopController'
+import { HeroesController } from './controllers/HeroesController'
+import { NewsController } from './controllers/NewsController'
+import { ForumController } from './controllers/ForumController'
 
 const init = async () => {
   const port = process.env.PORT
@@ -34,14 +32,21 @@ const init = async () => {
   })
 
   const app = createExpressServer({
-    controllers: [UserController, ShopController, NewsController, ForumController],
+    controllers: [
+      UserController,
+      ShopController,
+      NewsController,
+      ForumController,
+    ],
     interceptors: [GlobalResponseInterceptor],
     cors: {
-      methods:"GET,HEAD,PUT,PATCH,POST,DELETE",
-      allowedHeaders:"Origin,X-Requested-With,Content-Type,Accept, Accept-Encoding,Accept-Language,Authorization,Content-Length,Host,Referer,User-Agent",
-      exposedHeaders:"Origin,X-Requested-With,Content-Type,Accept, Accept-Encoding,Accept-Language,Authorization,Content-Length,Host,Referer,User-Agent",
-      credentials:true,
-      optionsSuccessStatus: 200
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+      allowedHeaders:
+        'Origin,X-Requested-With,Content-Type,Accept, Accept-Encoding,Accept-Language,Authorization,Content-Length,Host,Referer,User-Agent',
+      exposedHeaders:
+        'Origin,X-Requested-With,Content-Type,Accept, Accept-Encoding,Accept-Language,Authorization,Content-Length,Host,Referer,User-Agent',
+      credentials: true,
+      optionsSuccessStatus: 200,
     },
     classTransformer: true,
   })
@@ -52,10 +57,8 @@ const init = async () => {
     container: Container,
   })
 
-  app.use('/api-docs-news/', swagger.serve, swagger.setup(NewsDocs))
-  app.use('/api-docs-user/', swagger.serve, swagger.setup(UserDocs))
-  app.use('/api-docs-forum/', swagger.serve, swagger.setup(ForumDocs))
-  
+  app.use('/api-docs', swagger.serve, swagger.setup(ApiDocs))
+
   // static
   const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -65,34 +68,28 @@ const init = async () => {
       const fileNameDots = String(file.originalname).split('.')
       const fileExtention = fileNameDots[fileNameDots.length - 1]
 
-      const uniqueString = `file-${Date.now()}-${Math.round(Math.random() * 1E9)}.${fileExtention}`
+      const uniqueString = `file-${Date.now()}-${Math.round(Math.random() * 1e9)}.${fileExtention}`
       cb(null, uniqueString)
-    }
+    },
   })
   const upload = multer({ dest: 'static/', storage })
 
-  app.post('/upload-image', upload.single('file'), (req, res, next) => {
+  app.post('/upload-image', upload.single('file'), (req, res) => {
     const file = req.file
-    // console.log(file.mimetype)
-    
-    // if (file.mimetype !== 'image/jpeg' || file.mimetype !== 'image/png') return res.status(200).json({
-    //   status: 400,
-    //   message: 'Изображения подобного формата не поддерживаются',
-    // })
 
     res.status(200).json({
       status: 200,
       message: 'Изображение было загружено',
       body: {
         path: file.filename,
-      }
+      },
     })
   })
 
   app.get('/get-image/:path', async (req, res) => {
     try {
       const imagePath = req.params.path
-    
+
       res.sendFile(`${imagePath}`, { root: path.join(__dirname, '../static') })
     } catch (e) {
       console.log('error to send file', e)

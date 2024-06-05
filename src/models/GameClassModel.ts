@@ -21,17 +21,28 @@ export class GameClassModel extends Model {
   id: number
 
   @Column({
-    type: DataType.ENUM('KNIGHT', 'PRIEST', 'ARCHER', 'PALADIN', 'ROGUE', 'BARBARIAN', 'MAGE', 'WARLOCK', 'DRUID', 'SHAMAN'),
+    type: DataType.ENUM(
+      'KNIGHT',
+      'PRIEST',
+      'ARCHER',
+      'PALADIN',
+      'ROGUE',
+      'BARBARIAN',
+      'MAGE',
+      'WARLOCK',
+      'DRUID',
+      'SHAMAN'
+    ),
   })
   name: PlayerClassType
 
-  @Column({ type: DataType.INTEGER, })
+  @Column({ type: DataType.INTEGER })
   hp: number
 
-  @Column({ type: DataType.INTEGER, })
+  @Column({ type: DataType.INTEGER })
   speed: number
 
-  @Column({ type: DataType.INTEGER, })
+  @Column({ type: DataType.INTEGER })
   attackPower: number
 
   @Column({ type: DataType.INTEGER, defaultValue: 800 })

@@ -1,6 +1,19 @@
-import { developerRoleList } from './../data/lists/developer-roles.list';
-import { CreateUserInterface, SetUserInvitedHashInterface, UserModel, UsersFriendsModel, UpdateUserDataInterface } from '../models/UserSchema'
-import { Body, Post, JsonController, UseBefore, Req, Get } from 'routing-controllers'
+import { developerRoleList } from './../data/lists/developer-roles.list'
+import {
+  CreateUserInterface,
+  SetUserInvitedHashInterface,
+  UserModel,
+  UsersFriendsModel,
+  UpdateUserDataInterface,
+} from '../models/UserSchema'
+import {
+  Body,
+  Post,
+  JsonController,
+  UseBefore,
+  Req,
+  Get,
+} from 'routing-controllers'
 import * as bcrypt from 'bcrypt'
 import 'reflect-metadata'
 import { IsValidPassword } from '../libs/isValidVassword'
@@ -10,9 +23,9 @@ import { secretKey } from '../data/DataBase'
 import { checkToken } from '../libs/checkAuth'
 import { createRandomString } from '../libs/createRandomString'
 import { AuthMiddleware } from '../middleware/AuthMiddleware'
-import { UserRoleType } from '../models/UserModel';
+import { UserRoleType } from '../models/UserModel'
 
-@JsonController ('/user')
+@JsonController('/user')
 export class UserController {
   @Post('/create-user')
   async createUser(@Body() body: CreateUserInterface) {
@@ -20,24 +33,23 @@ export class UserController {
       return {
         status: 304,
         message: 'Пожалуйста, заполните все поля',
-        error: 'Пожалуйста, заполните все поля'
+        error: 'Пожалуйста, заполните все поля',
       }
     }
 
-    const isUsernameExists = await UserModel.findOne({ where: { username: body.username } })
+    const isUsernameExists = await UserModel.findOne({
+      where: { username: body.username },
+    })
 
     if (isUsernameExists?.dataValues?.id) {
       return {
         status: 409,
         message: 'Персонаж с таким именем уже существует',
-        error: 'Персонаж с таким именем уже существует'
+        error: 'Персонаж с таким именем уже существует',
       }
     }
 
-    const isPasswordValid = await IsValidPassword(
-      body.password,
-      body.username,
-    )
+    const isPasswordValid = await IsValidPassword(body.password, body.username)
 
     if (!isPasswordValid.ok) {
       return {
@@ -50,15 +62,19 @@ export class UserController {
     const userHash = await createRandomString()
 
     const user = await UserModel.create({
-      username: body.username,
+      username: String(body.username),
       password: String(hashPassword),
       userHash,
     })
 
-    const friendList = await UsersFriendsModel.create({ userId: user.dataValues.id })
+    const friendList = await UsersFriendsModel.create({
+      userId: user.dataValues.id,
+    })
 
-    UserModel.update({ friendsListId: user.dataValues.id }, { where: { id: user.dataValues.id } })
-
+    UserModel.update(
+      { friendsListId: user.dataValues.id },
+      { where: { id: user.dataValues.id } }
+    )
 
     const token: Model = await jwt.sign(
       {
@@ -68,7 +84,7 @@ export class UserController {
       secretKey,
       {
         expiresIn: '15d',
-      },
+      }
     )
 
     return {
@@ -78,14 +94,14 @@ export class UserController {
         friendList,
       },
       status: 200,
-      message: 'Пользователь создан'
+      message: 'Пользователь создан',
     }
   }
 
   @Post('/login')
-  async login (@Body() body: CreateUserInterface) {
+  async login(@Body() body: CreateUserInterface) {
     const user = await UserModel.findOne({
-      where: { username: body.username },
+      where: { username: String(body.username) },
     })
 
     if (!user) {
@@ -96,7 +112,10 @@ export class UserController {
       }
     }
 
-    const isPassword = await bcrypt.compare(body.password, user.dataValues.password)
+    const isPassword = await bcrypt.compare(
+      body.password,
+      user.dataValues.password
+    )
 
     if (!isPassword) {
       return {
@@ -105,7 +124,6 @@ export class UserController {
         ok: false,
       }
     }
-
 
     const token = jwt.sign(
       {
@@ -130,26 +148,30 @@ export class UserController {
   async checkToken(@Body() body) {
     const { token } = body
     const { user } = await checkToken(token)
-    
-    if (!user) return {
-      status: 304,
-      message: 'Трубуется подтвердить авторизацию',
-      error: 'User Token is invalid'
-    }
+
+    if (!user)
+      return {
+        status: 304,
+        message: 'Трубуется подтвердить авторизацию',
+        error: 'User Token is invalid',
+      }
 
     return {
       message: 'Авторизация подтверждена',
       ok: true,
       status: 200,
       body: {
-        user
-      }
+        user,
+      },
     }
   }
 
   @Post('/set-user-hash')
   @UseBefore(AuthMiddleware)
-  async setUserInvatedHash(@Body() body: SetUserInvitedHashInterface, @Req() request) {
+  async setUserInvatedHash(
+    @Body() body: SetUserInvitedHashInterface,
+    @Req() request
+  ) {
     const VIPGiftDays = 7
 
     const user = request.user
@@ -166,8 +188,10 @@ export class UserController {
       }
     }
 
-    const referal = await UserModel.findOne({ where: { userHash: invitedHash } })
-    
+    const referal = await UserModel.findOne({
+      where: { userHash: invitedHash },
+    })
+
     if (!referal) {
       return {
         status: 404,
@@ -186,13 +210,19 @@ export class UserController {
 
     referalVIPDateEnd.setDate(dateEnd.getDate() + VIPGiftDays)
 
-    await UserModel.update({ invitedHash, endVIPDate: dateEnd }, { where: { id: user.id } })
-    await UserModel.update({ endVIPDate: referalVIPDateEnd, isVIPStatus: true }, { where: { id: referal.dataValues.id } })
+    await UserModel.update(
+      { invitedHash, endVIPDate: dateEnd },
+      { where: { id: user.id } }
+    )
+    await UserModel.update(
+      { endVIPDate: referalVIPDateEnd, isVIPStatus: true },
+      { where: { id: referal.dataValues.id } }
+    )
 
     return {
       ok: true,
       status: 200,
-      message: 'Реферальный код указан'
+      message: 'Реферальный код указан',
     }
   }
 
@@ -201,34 +231,36 @@ export class UserController {
   async setRole(@Body() body, @Req() request) {
     const role: UserRoleType = body.role
     const user = request.user
-    
-    if (user.role === 'ROOT') return {
-      status: 304,
-      message: 'Никто не может поменять роль ROOT',
-      error: 'NotPermission'
-    }
+
+    if (user.role === 'ROOT')
+      return {
+        status: 304,
+        message: 'Никто не может поменять роль ROOT',
+        error: 'NotPermission',
+      }
 
     await UserModel.update({ role }, { where: { id: user.id } })
 
     return {
       status: 200,
       message: 'Роль успешно изменена',
-      body: {}
+      body: {},
     }
   }
 
   @Post('/update-user')
   @UseBefore(AuthMiddleware)
-  async updateUser (@Req() req, @Body() body: UpdateUserDataInterface) {
+  async updateUser(@Req() req, @Body() body: UpdateUserDataInterface) {
     const user = req.user
 
     const candidat = await UserModel.findOne({ where: { id: user.id } })
 
-    if (!candidat) return {
-      status: 404,
-      message: 'Пользователь с таким именем не найден',
-      error: 'NotFound'
-    }
+    if (!candidat)
+      return {
+        status: 404,
+        message: 'Пользователь с таким именем не найден',
+        error: 'NotFound',
+      }
 
     await UserModel.update({ ...body }, { where: { id: user.id } })
 
@@ -236,22 +268,22 @@ export class UserController {
       status: 200,
       message: 'Данные были обновлены',
       ok: true,
-      body: {}
+      body: {},
     }
   }
 
-  async setOnlinestatus (id, isOnline) {
+  async setOnlinestatus(id, isOnline) {
     await UserModel.update({ isOnline }, { where: { id } })
   }
 
   @Get('/get-developer-roles')
-  async getDeveloperRoles () {
+  async getDeveloperRoles() {
     return {
       status: 200,
       message: 'Список ролей получен',
       body: {
-        roles: developerRoleList
-      }
+        roles: developerRoleList,
+      },
     }
   }
 }

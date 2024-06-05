@@ -14,12 +14,43 @@
         "tags": ["For Admin User"],
         "description": "Создать тему",
         "parameters": [
-          { "name": "titleRU", "in": "formData", "required": true, "type": "string" },
-          { "name": "titleEN", "in": "formData", "required": true, "type": "string" },
-          { "name": "descriptionRU", "in": "formData", "required": true, "type": "string" },
-          { "name": "descriptionEN", "in": "formData", "required": true, "type": "string" },
-          { "name": "avatar", "in": "formData", "required": false, "type": "string" },
-          { "name": "tags", "in": "formData", "required": true, "type": "array", "items": { "type": "string" } }
+          {
+            "name": "titleRU",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "titleEN",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "descriptionRU",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "descriptionEN",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "avatar",
+            "in": "formData",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "tags",
+            "in": "formData",
+            "required": true,
+            "type": "array",
+            "items": { "type": "string" }
+          }
         ],
         "responses": {}
       }
@@ -31,11 +62,37 @@
         "tags": ["/article"],
         "description": "Создать статью",
         "parameters": [
-          { "name": "title", "in": "formData", "required": true, "type": "string" },
-          { "name": "description", "in": "formData", "required": true, "type": "string" },
-          { "name": "body", "in": "formData", "required": true, "type": "string" },
-          { "name": "themeId", "in": "formData", "required": true, "type": "number" },
-          { "name": "locale", "in": "formData", "required": true, "type": "string", "enum": ["ru-RU", "en-EN"] }
+          {
+            "name": "title",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "description",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "themeId",
+            "in": "formData",
+            "required": true,
+            "type": "number"
+          },
+          {
+            "name": "locale",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "enum": ["ru-RU", "en-EN"]
+          }
         ],
         "responses": {}
       }
@@ -47,7 +104,13 @@
         "tags": ["/aticle"],
         "description": "Получить темы форума",
         "parameters": [
-          { "name": "locale", "in": "formData", "required": true, "type": "string", "enum": ["ru-RU", "en-EN"] }
+          {
+            "name": "locale",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "enum": ["ru-RU", "en-EN"]
+          }
         ],
         "responses": {}
       }
@@ -59,10 +122,31 @@
         "tags": ["/aticle"],
         "description": "Получить список новостей",
         "parameters": [
-          { "name": "limit", "in": "formData", "required": true, "type": "number" },
-          { "name": "offset", "in": "formData", "required": true, "type": "number" },
-          { "name": "themeId", "in": "formData", "required": true, "type": "number" },
-          { "name": "locale", "in": "formData", "required": true, "type": "string", "enum": ["ru-RU", "en-EN"] }
+          {
+            "name": "limit",
+            "in": "formData",
+            "required": true,
+            "type": "number"
+          },
+          {
+            "name": "offset",
+            "in": "formData",
+            "required": true,
+            "type": "number"
+          },
+          {
+            "name": "themeId",
+            "in": "formData",
+            "required": true,
+            "type": "number"
+          },
+          {
+            "name": "locale",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "enum": ["ru-RU", "en-EN"]
+          }
         ],
         "responses": {}
       }
@@ -86,7 +170,12 @@
         "tags": ["For Admin User"],
         "description": "Удалить новость",
         "parameters": [
-          { "name": "slug", "in": "formData", "required": true, "type": "number" }
+          {
+            "name": "slug",
+            "in": "formData",
+            "required": true,
+            "type": "number"
+          }
         ],
         "responses": {}
       }
@@ -98,7 +187,12 @@
         "tags": ["/article"],
         "description": "Оставить комментарий к статье",
         "parameters": [
-          { "message": "slug", "in": "formData", "required": true, "type": "string" }
+          {
+            "message": "slug",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          }
         ],
         "responses": {}
       }
@@ -110,7 +204,12 @@
         "tags": ["For Admin User"],
         "description": "Оставить комментарий к статье",
         "parameters": [
-          { "message": "id", "in": "formData", "required": true, "type": "string" }
+          {
+            "message": "id",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          }
         ],
         "responses": {}
       }
@@ -122,7 +221,12 @@
         "tags": ["For Admin User"],
         "description": "Оставить комментарий к статье",
         "parameters": [
-          { "message": "id", "in": "formData", "required": true, "type": "string" }
+          {
+            "message": "id",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          }
         ],
         "responses": {}
       }
@@ -133,8 +237,7 @@
         "operationId": "index",
         "tags": ["For Admin User"],
         "description": "Получить список комментариев без модерации",
-        "parameters": [
-        ],
+        "parameters": [],
         "responses": {}
       }
     },
@@ -144,8 +247,7 @@
         "operationId": "index",
         "tags": ["For Admin User"],
         "description": "Получить число комментариев без модерации",
-        "parameters": [
-        ],
+        "parameters": [],
         "responses": {}
       }
     }

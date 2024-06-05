@@ -1,6 +1,6 @@
-import { UserModel, UserRoleType } from "./UserModel"
-import { UsersFriendsModel } from "./UserFriendsModel"
-import { GameClassInterface } from "../data/game-classes/GameClass"
+import { UserModel, UserRoleType } from './UserModel'
+import { UsersFriendsModel } from './UserFriendsModel'
+import { GameClassInterface } from '../data/game-classes/GameClass'
 
 interface CreateUserInterface {
   username: string
@@ -63,4 +63,4 @@ export {
   type SetUserInvitedHashInterface,
   type UserLockedDataInterface,
   type UpdateUserDataInterface,
-} 
+}

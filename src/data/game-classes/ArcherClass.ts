@@ -1,4 +1,8 @@
-import { GameClassInterface, GameClassSkillInterface, GameSkillEffectParamsInterface } from "./GameClass";
+import {
+  GameClassInterface,
+  GameClassSkillInterface,
+  GameSkillEffectParamsInterface,
+} from './GameClass'
 
 export const ArcherClassSkills: GameClassSkillInterface[] = [
   {
@@ -9,7 +13,7 @@ export const ArcherClassSkills: GameClassSkillInterface[] = [
     skillLevel: 0,
     isHaveEffect: true,
     effect: (gameData: GameSkillEffectParamsInterface) => {},
-    skillPrice: 500
+    skillPrice: 500,
   },
   {
     name: 'Toxic Fog',
@@ -19,8 +23,8 @@ export const ArcherClassSkills: GameClassSkillInterface[] = [
     skillLevel: 0,
     isHaveEffect: true,
     effect: (gameData: GameSkillEffectParamsInterface) => {},
-    skillPrice: 1000
-  }
+    skillPrice: 1000,
+  },
 ]
 
 export const ArcherClass: GameClassInterface = {
@@ -29,5 +33,5 @@ export const ArcherClass: GameClassInterface = {
   speed: 5,
   attackPower: 40,
   skills: ArcherClassSkills,
-  classPrice: 800
+  classPrice: 800,
 }

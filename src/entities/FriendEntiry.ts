@@ -1,5 +1,9 @@
-import { FriendRelatedModel } from "../models/FriendRelatedModel"
-import { OpenUserDataInterface, UserModel, UsersFriendsModel } from "../models/UserSchema"
+import { FriendRelatedModel } from '../models/FriendRelatedModel'
+import {
+  OpenUserDataInterface,
+  UserModel,
+  UsersFriendsModel,
+} from '../models/UserSchema'
 
 export type FriendEntiryActionType = 'add' | 'remove'
 
@@ -18,7 +22,7 @@ export interface FriendEntiryMethodResponseInterface {
 }
 
 export class FriendEntiry {
-  constructor (data: FriendEntiryCreateParamsInterface) {
+  constructor(data: FriendEntiryCreateParamsInterface) {
     this.friendUsername = data.friendUsername
     this.action = data.action || null
     this.user = data.user
@@ -29,18 +33,17 @@ export class FriendEntiry {
   action = null
   user: OpenUserDataInterface = null
 
-  async add (): Promise<FriendEntiryMethodResponseInterface> {
-
-    const candidat = await UserModel.findOne(
-      { where: { username: this.friendUsername },
-      attributes: ['username', 'isOnline', 'role', 'id']
+  async add(): Promise<FriendEntiryMethodResponseInterface> {
+    const candidat = await UserModel.findOne({
+      where: { username: this.friendUsername },
+      attributes: ['username', 'isOnline', 'role', 'id'],
     })
 
     if (!candidat?.id) {
       return {
         ok: false,
         status: 404,
-        message: 'Пользователь не найден'
+        message: 'Пользователь не найден',
       }
     }
 
@@ -53,12 +56,15 @@ export class FriendEntiry {
       return {
         ok: false,
         status: 409,
-        message: 'Пользователь уже в списке друзей'
+        message: 'Пользователь уже в списке друзей',
       }
     }
 
     const friends = [...this.user.friends, candidat]
-    const friendRelated = await FriendRelatedModel.create({ userId: candidat.id, friendListId: this.user.friendsListId  })
+    const friendRelated = await FriendRelatedModel.create({
+      userId: candidat.id,
+      friendListId: this.user.friendsListId,
+    })
 
     return {
       ok: true,
@@ -66,8 +72,8 @@ export class FriendEntiry {
       message: 'Пользователь добавлен в список друзей',
       body: {
         friends,
-        user: this.user
-      }
+        user: this.user,
+      },
     }
   }
 }

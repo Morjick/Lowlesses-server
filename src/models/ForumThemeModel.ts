@@ -1,4 +1,4 @@
-import { UserModel } from './UserModel';
+import { UserModel } from './UserModel'
 import {
   Table,
   Column,
@@ -31,10 +31,10 @@ export class ForumThemeModel extends Model {
 
   @Column({ type: DataType.STRING, unique: true, allowNull: false })
   titleEN: string
-  
+
   @Column({ type: DataType.STRING })
   descriptionEN: string
-  
+
   @Column({ type: DataType.STRING })
   descriptionRU: string
 

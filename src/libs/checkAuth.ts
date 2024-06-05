@@ -1,7 +1,8 @@
-
 import * as jwt from 'jsonwebtoken'
-import { OpenUserDataInterface, UserModel, UsersFriendsModel } from '../models/UserSchema'
-import { FriendRelatedModel } from '../models/FriendRelatedModel'
+import {
+  OpenUserDataInterface,
+  UserModel,
+} from '../models/UserSchema'
 import { getGamseClassesFromUser } from '../data/game-classes/GameClass'
 require('dotenv').config()
 
@@ -13,16 +14,20 @@ interface ResponseCheckAuthInterface {
   error?: string
 }
 
-export const checkToken = async (token: string, isOnline = true): Promise<ResponseCheckAuthInterface> => {
+export const checkToken = async (
+  token: string,
+  isOnline = true
+): Promise<ResponseCheckAuthInterface> => {
   const secretKey = process.env.JWT_SECRET_KEY
 
   try {
-    if (!token || !token.length) return {
-      message: 'Не удалось подтвердить авторизацию',
-      ok: false,
-      status: 401,
-      error: 'Нет токена авторизации',
-    }
+    if (!token || !token.length)
+      return {
+        message: 'Не удалось подтвердить авторизацию',
+        ok: false,
+        status: 401,
+        error: 'Нет токена авторизации',
+      }
 
     const { id } = jwt.verify(token, secretKey, {
       secret: secretKey,
@@ -36,7 +41,7 @@ export const checkToken = async (token: string, isOnline = true): Promise<Respon
       }
     }
 
-    await UserModel.update({ isOnline, }, { where: { id: id } })
+    await UserModel.update({ isOnline }, { where: { id: id } })
     const user = await UserModel.findOne({
       where: { id },
       attributes: {
@@ -48,17 +53,21 @@ export const checkToken = async (token: string, isOnline = true): Promise<Respon
       return {
         message: 'Авторизация не подтверждена',
         ok: false,
-        status: 402
+        status: 402,
       }
     }
-    console.log(user.dataValues.userLockedData)
 
     const userOpenData = {
       ...user.dataValues,
       friends: user.dataValues.friendList?.dataValues
-        ? user.dataValues.friendList.dataValues.friends.map((el) => el.dataValues.user.dataValues)
+        ? user.dataValues.friendList.dataValues.friends.map(
+            (el) => el.dataValues.user.dataValues
+          )
         : [],
-      userLockedData: typeof user.dataValues.userLockedData !== 'string' ? user.dataValues.userLockedData : JSON.parse(user.dataValues.userLockedData)
+      userLockedData:
+        typeof user.dataValues.userLockedData !== 'string'
+          ? user.dataValues.userLockedData
+          : JSON.parse(user.dataValues.userLockedData),
     }
 
     if (!userOpenData.friends.friendsId) {
@@ -73,9 +82,9 @@ export const checkToken = async (token: string, isOnline = true): Promise<Respon
       message: 'Авторизация подтверждена',
       ok: true,
       user: userOpenData,
-      status: 200
+      status: 200,
     }
-  } catch(e) {
+  } catch (e) {
     console.warn('Ошибка при подтверждении токена', e)
   }
 }

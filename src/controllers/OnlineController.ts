@@ -1,11 +1,15 @@
-import { checkToken } from '../libs/checkAuth';
-import { Service } from 'typedi';
-import { getTokenSromSocket } from '../libs/getTokenSromSocket';
-import { FriendEntiry } from '../entities/FriendEntiry';
-import { UserEntity } from '../entities/UserEntity';
-import { OpenUserDataInterface } from '../models/UserSchema';
-import { GameModeInterface, JoinToRoomUserParamInterface, RommEntity } from '../entities/RoomEntity';
-import { createRandomString } from '../libs/createRandomString';
+import { checkToken } from '../libs/checkAuth'
+import { Service } from 'typedi'
+import { getTokenSromSocket } from '../libs/getTokenSromSocket'
+import { FriendEntiry } from '../entities/FriendEntiry'
+import { UserEntity } from '../entities/UserEntity'
+import { OpenUserDataInterface } from '../models/UserSchema'
+import {
+  GameModeInterface,
+  JoinToRoomUserParamInterface,
+  RommEntity,
+} from '../entities/RoomEntity'
+import { createRandomString } from '../libs/createRandomString'
 import {
   SocketController,
   OnMessage,
@@ -15,10 +19,20 @@ import {
   OnConnect,
   OnDisconnect,
   SocketIO,
-} from 'socket-controllers';
-import { GameClasses, PlayerClassType, getClassForName } from '../data/game-classes/GameClass';
+} from 'socket-controllers'
+import {
+  //GameClasses,
+  PlayerClassType,
+  getClassForName,
+} from '../data/game-classes/GameClass'
 
-export type ConnectedUserInterfaceType = 'menu' | 'game' | 'shop' | 'inventory' | 'choice-charter' | 'waiting-for-the-start'
+export type ConnectedUserInterfaceType =
+  | 'menu'
+  | 'game'
+  | 'shop'
+  | 'inventory'
+  | 'choice-charter'
+  | 'waiting-for-the-start'
 
 export interface ConnectedUser {
   user: OpenUserDataInterface
@@ -48,17 +62,18 @@ export class OnlineController {
   public activeGameRooms: RommEntity[] = []
   public isOnlineControllerOn = false
 
-  activateOnlineController () {
+  activateOnlineController() {
     this.isOnlineControllerOn = true
 
     setInterval(() => {
-      this.activeGameRooms = this.activeGameRooms.filter(room => !room.isGameEnd)
+      this.activeGameRooms = this.activeGameRooms.filter(
+        (room) => !room.isGameEnd
+      )
     }, 1000 * 10)
   }
 
-
   @OnConnect()
-  async connect(@ConnectedSocket() socket: any, @MessageBody() message: any) {
+  async connect(@ConnectedSocket() socket: any) {
     try {
       if (!this.isOnlineControllerOn) this.activateOnlineController()
 
@@ -75,12 +90,12 @@ export class OnlineController {
         lastActionTime: Date.toString(),
         interface: 'menu',
         socket,
-        id: user.id
+        id: user.id,
       })
-      
+
       socket.join('main-menu')
       socket.handshake.roomHash = 'main-menu'
-    } catch(e) {}
+    } catch (e) {}
   }
 
   @OnDisconnect()
@@ -99,13 +114,19 @@ export class OnlineController {
   }
 
   @OnMessage('choice-character')
-  playerChoiceCharacter(@ConnectedSocket() socket: any, @MessageBody() stringMessage: any) {
-    const message: PlayerChoiceCharacterParamInterface = JSON.parse(stringMessage)
+  playerChoiceCharacter(
+    @ConnectedSocket() socket: any,
+    @MessageBody() stringMessage: any
+  ) {
+    const message: PlayerChoiceCharacterParamInterface =
+      JSON.parse(stringMessage)
     const roomHash = socket.handshake.roomHash
 
     if (!message.gameClass || !roomHash) return
 
-    const playerRoom = this.activeGameRooms.find((room) => room.hash === roomHash)
+    const playerRoom = this.activeGameRooms.find(
+      (room) => room.hash === roomHash
+    )
 
     if (!playerRoom) return
 
@@ -115,7 +136,10 @@ export class OnlineController {
   }
 
   @OnMessage('/add-to-friends')
-  async addToFriends(@ConnectedSocket() socket: any, @MessageBody() stringMessage: any) {
+  async addToFriends(
+    @ConnectedSocket() socket: any,
+    @MessageBody() stringMessage: any
+  ) {
     const user = socket.handshake.user
 
     const message = JSON.parse(stringMessage)
@@ -131,10 +155,17 @@ export class OnlineController {
   }
 
   @OnMessage('search-game')
-  async searchRoom (@ConnectedSocket() socket: any, @MessageBody() stringMessage: any, @SocketIO() io: any) {
+  async searchRoom(
+    @ConnectedSocket() socket: any,
+    @MessageBody() stringMessage: any,
+    @SocketIO() io: any
+  ) {
     const message: SearchRoomParamInterface = JSON.parse(stringMessage)
     if (socket.handshake.roomHash !== 'main-menu') {
-      socket.emit('game-error', 'Для поиска игры вы должны находиться в главном меню. Если вы видите это сообщение, находясь в нём, пожалуйста, перезагрузите игру')
+      socket.emit(
+        'game-error',
+        'Для поиска игры вы должны находиться в главном меню. Если вы видите это сообщение, находясь в нём, пожалуйста, перезагрузите игру'
+      )
       return
     }
 
@@ -149,7 +180,7 @@ export class OnlineController {
 
     const suitableRooms = this.activeGameRooms.filter((room) => {
       if (room.isCanJoin && room.gameMode === message.mode) {
-       return room
+        return room
       }
     })
 
@@ -170,7 +201,7 @@ export class OnlineController {
     })
 
     const playerRoom = sortedSuitableRooms[0]
-    
+
     setTimeout(() => {
       socket.join(playerRoom.hash)
       socket.handshake.roomHash = playerRoom.hash
@@ -182,7 +213,9 @@ export class OnlineController {
     const createRoomHash = async () => {
       const hash = await createRandomString()
 
-      const isRoomHashExists = this.activeGameRooms.find(room => room.hash === hash)
+      const isRoomHashExists = this.activeGameRooms.find(
+        (room) => room.hash === hash
+      )
 
       if (isRoomHashExists) return createRoomHash()
       else return hash
@@ -195,7 +228,7 @@ export class OnlineController {
       gameMode: roomData.gameMode,
       gameTime: 240,
       gameSocket: io,
-      roomCreatedTime: Date().toString()
+      roomCreatedTime: Date().toString(),
     })
 
     this.activeGameRooms.push(room)
