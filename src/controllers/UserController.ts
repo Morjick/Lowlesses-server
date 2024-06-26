@@ -13,6 +13,8 @@ import {
   UseBefore,
   Req,
   Get,
+  Params,
+  QueryParams,
 } from 'routing-controllers'
 import * as bcrypt from 'bcrypt'
 import 'reflect-metadata'
@@ -24,6 +26,11 @@ import { checkToken } from '../libs/checkAuth'
 import { createRandomString } from '../libs/createRandomString'
 import { AuthMiddleware } from '../middleware/AuthMiddleware'
 import { UserRoleType } from '../models/UserModel'
+import { developerList } from '../data/lists/developer.list'
+import getTransplit from '../libs/getTranslate'
+import { getToken } from '../libs/getToken'
+import { UserAttributesForAdmin, UserAttributesForUser } from '../data/lists/users.list'
+import { GetUsersQueryInterface } from '../data/contracts/user.contracts'
 
 @JsonController('/user')
 export class UserController {
@@ -60,11 +67,13 @@ export class UserController {
 
     const hashPassword = await bcrypt.hash(body.password, 10)
     const userHash = await createRandomString()
+    const slug = await getTransplit(body.username)
 
     const user = await UserModel.create({
       username: String(body.username),
       password: String(hashPassword),
       userHash,
+      slug,
     })
 
     const friendList = await UsersFriendsModel.create({
@@ -283,6 +292,110 @@ export class UserController {
       message: 'Список ролей получен',
       body: {
         roles: developerRoleList,
+      },
+    }
+  }
+
+  @Get('/get-developers')
+  async getDevelopers () {
+    return {
+      status: 200,
+      message: 'Авторы проекта получены',
+      body: {
+        developers: developerList,
+      },
+    }
+  }
+
+  @Get('/get-user/:slug')
+  async getUser (@Params() params) {
+    const slug: string = params.slug
+
+    const user = UserModel.findOne(
+      { where: { slug } },
+    )
+
+    return {
+      status: 200,
+      message: 'Пользователь получен',
+      body: {
+        user,
+      }
+    }
+  }
+
+  @Get('/get-users')
+  async getUsers (@QueryParams() query: GetUsersQueryInterface, @Req() req) {
+    try {
+      const {
+        limit = 20,
+        page = 1,
+      } = query
+
+      const token = getToken(req)
+      let isAdmin = false
+
+      if (token) {
+        const { user } = await checkToken(token)
+        const role = user?.role || 'USER'
+
+        isAdmin = role === 'USER' ? false : true
+      }
+      const totalOffset = (Number(page) * limit) - limit
+
+      const users = await UserModel.findAll({
+        attributes: isAdmin ? UserAttributesForAdmin : UserAttributesForUser,
+        limit, offset: totalOffset,
+      })
+      const count = await UserModel.count()
+
+      const totalPages = Math.ceil(
+        count / limit > 1 ? Math.ceil(count) / limit : 1
+      )
+      const isNextPageAvaible = Number(page) + 1 <= totalPages ? true : false
+
+      const pagination = {
+        totalCount: count,
+        offset: totalOffset,
+        activePage: Number(page),
+        totalPages: totalPages,
+        isNextPageAvaible,
+        isPrevPageAvaible: Boolean(page - 1 > 0),
+      }
+
+      return {
+        status: 200,
+        message: 'Пользователи получены',
+        body: {
+          users: users.map(el => el.dataValues),
+          pagination,
+        }
+      }
+    } catch(e) {
+      return {
+        status: 501,
+        message: '',
+        error: e,
+      }
+    }
+  }
+
+  @Get('/get-developer/:slug')
+  async getDeveloper (@Params() params) {
+    const slug: string = params.slug
+    const develoepr = developerList.find(el => el.slug === slug)
+    
+    if (!develoepr) return {
+      status: 404,
+      message: 'Пользователь не найден',
+      error: 'NotFound'
+    }
+
+    return {
+      status: 200,
+      message: 'Разработчик получен',
+      body: {
+        develoepr,
       },
     }
   }

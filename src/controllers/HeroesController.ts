@@ -25,7 +25,7 @@ export interface BySkillParamInterface {
 @Service()
 export class HeroesController {
   @OnMessage('by-hero')
-  async byHeroe(
+  async byHero(
     @ConnectedSocket() socket: any,
     @MessageBody() stringMessage: any
   ) {
@@ -36,6 +36,14 @@ export class HeroesController {
     const user: OpenUserDataInterface = socket.handshake.user
 
     const playerClass = getClassForName(message.hero)
+
+    if (!playerClass) {
+      return socket.emit('game-error', JSON.stringify({
+        message: 'Сейчас это действие недоступно',
+        error: 'PlayerClass not found',
+      }))
+    }
+
     const userClass = user.userLockedData.classes.find(
       (el) => el.name === playerClass.name
     )
@@ -43,31 +51,37 @@ export class HeroesController {
     if (userClass.locked === undefined && userClass.locked === null) {
       return socket.emit(
         'game-error',
-        'Ошибка при покупке персонажа: персонаж с таким именем не найден'
+        JSON.stringify({
+          message: 'Ошибка при покупке персонажа: персонаж с таким именем не найден'
+        })
       )
     }
 
     if (!userClass.locked) {
-      socket.emit('game-error', 'У вас уже открыт этот персонаж')
+      socket.emit('game-error', JSON.stringify({
+        message: 'У вас уже открыт этот персонаж'
+      }))
       return
     }
-
-    if (user.money < userClass.classPrice) {
-      return socket.emit('game-error', 'Недостаточно кристаллов')
+    if (!user.money || user.money < playerClass.classPrice) {
+      return socket.emit('game-error', JSON.stringify({
+        message: 'Недостаточно кристаллов'
+      }))
     }
-
-    user.money = user.money - userClass.classPrice
+    user.money = user.money - playerClass.classPrice
     user.userLockedData.classes.find(
       (el) => el.name === playerClass.name
     ).locked = false
 
     await UserModel.update(
-      { userLockedData: JSON.stringify(user.userLockedData) },
+      { userLockedData: JSON.stringify(user.userLockedData), money: user.money },
       { where: { id: user.id } }
     )
 
     socket.handshake.user = user
-    socket.emit('update', 'Персонаж разблокирован')
+    socket.emit('notification', JSON.stringify({
+      message: 'Персонаж разблокирован'
+    }))
   }
 
   @OnMessage('by-skill')

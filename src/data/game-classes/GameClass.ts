@@ -1,9 +1,9 @@
+import { RoomPlayerEnity } from './../../entities/RoomPlayerEnity'
 import { GameClassModel } from '../../models/GameClassModel'
-import { GameRoomPlayerInterface } from '../../entities/RoomEntity'
 import { ArcherClass } from './ArcherClass'
 import { KnightClass } from './KnightClass'
 import { OpenUserDataInterface } from '../../models/UserSchema'
-import { GameSkillModel } from '../../models/GameSkillModel'
+import { PriestClass } from './PriestClass'
 
 export type PlayerClassType =
   | 'KNIGHT'
@@ -19,7 +19,7 @@ export type PlayerClassType =
 export type SkillLevelType = 0 | 1 | 2 | 3
 
 export interface GameSkillEffectParamsInterface {
-  targets: GameRoomPlayerInterface[]
+  targets: RoomPlayerEnity[]
 }
 
 export interface GameClassSkillInterface {
@@ -46,7 +46,7 @@ export interface GameClassInterface {
 }
 
 export const GameClasses: GameClassInterface[] = []
-export const GameDefaultClass: GameClassInterface[] = [ArcherClass, KnightClass]
+export const GameDefaultClass: GameClassInterface[] = [ArcherClass, KnightClass, PriestClass]
 
 export const getClassForName = (className: string): GameClassInterface => {
   return GameClasses.find((gameClass) => {

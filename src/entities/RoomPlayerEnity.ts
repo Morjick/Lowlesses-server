@@ -1,4 +1,4 @@
-import { OpenUserDataInterface } from '../models/UserSchema'
+import { OpenUserDataInterface, UserModel } from '../models/UserSchema'
 import {
   PlayerAnimationType,
   PlayerComandType,
@@ -25,7 +25,7 @@ export class RoomPlayerEnity {
   public command: PlayerComandType = null
   public isAlive: boolean = true
   public user: OpenUserDataInterface = null
-  public class: GameClassInterface = null
+  public className: GameClassInterface = null
   public animation: PlayerAnimationType = 'idle'
   public position: PlayerPositionInterface = null
   public gameMap: GameMapInterface = null
@@ -38,6 +38,8 @@ export class RoomPlayerEnity {
 
   private respawnTimeout = 0
   private respawnTimeoutFunction = null
+
+  private animationTimeout = null
 
   private readonly respawnForMonyPrice = 10
   public emitter = null
@@ -57,40 +59,46 @@ export class RoomPlayerEnity {
       (playerClass) => playerClass.name === gameClass.name
     )
 
-    if (isClassLocked) {
-      this.class = this.user.userLockedData.classes.find(
+    if (!isClassLocked) {
+      this.className = this.user.userLockedData.classes.find(
         (playerClass) => playerClass.locked
       )
       return
     }
 
-    this.class = gameClass
-    this.hp = this.class.hp
-    this.speed = this.class.speed
-    this.damage = this.class.attackPower
+    this.className = gameClass
+    this.hp = Math.ceil(this.className.hp)
+    this.speed = this.className.speed
+    this.damage = this.className.attackPower
 
-    this.socket.emit('update:change-class', {
-      class: this.class,
-    })
+    this.updatePlayerState()
   }
 
   private die(damagerId: number) {
-    this.respawnTimeout = 10
-    this.dies = this.dies + 1
+    try {
+      this.respawnTimeout = 10
+      this.dies = this.dies + 1
+      this.isAlive = false
 
-    this.socket.emit('update:player-die')
-    this.socket.emit('redirect', 'choice-charter')
+      this.socket.emit('player-die')
 
-    this.emitter.emit('player-die', {
-      playerId: this.user.id,
-      killerId: damagerId,
-    })
+      this.emitter.emit('player-die', {
+        playerId: this.user.id,
+        killerId: damagerId,
+      })
 
-    this.respawnTimeoutFunction = setInterval(() => {
-      this.respawnTimeout = this.respawnTimeout - 1
+      this.respawnTimeoutFunction = setInterval(() => {
+        this.respawnTimeout = this.respawnTimeout - 1
+        this.socket.emit('respawn-timeout-update', JSON.stringify({
+          time: this.respawnTimeout,
+        }))
+        this.updatePlayerState()
 
-      if (this.respawnTimeout <= 0) clearInterval(this.respawnTimeoutFunction)
-    })
+        if (this.respawnTimeout <= 0) clearInterval(this.respawnTimeoutFunction)
+      }, 1000)
+    } catch (e) {
+      console.log('error:', e)
+    }
   }
 
   public respawn() {
@@ -100,7 +108,11 @@ export class RoomPlayerEnity {
       gameMap: this.gameMap,
       comand: this.command,
     })
-    this.socket.emit('redirect', 'game')
+    this.hp = this.className.hp    
+    this.isAlive = true
+
+    this.socket.emit('player-respawn')
+    this.updatePlayerState()
   }
 
   private respawnForMoney() {
@@ -116,25 +128,59 @@ export class RoomPlayerEnity {
     this.position = data.position
     this.animation = data.animation
 
-    this.socket('update:approove-action', {
-      position: this.position,
-      animation: this.animation,
-    })
+    this.updatePlayerState()
+    this.animationTimeout = setTimeout(() => {
+      this.animation = 'idle'
+      this.updatePlayerState()
+
+      clearTimeout(this.animationTimeout)
+    }, 500)
   }
 
   public takeDamage(damage: number, damagerId: number) {
-    const totalDamage = damage - (damage * this.armorPersent) / 100
-    this.hp = this.hp - totalDamage
+    const totalDamage = damage - (damage * this.armorPersent / 100)
+    this.hp = Math.ceil(this.hp - totalDamage)
 
-    this.socket.emit('update:take-damage', {
+    this.socket.emit('take-damage', JSON.stringify({
       hp: this.hp,
       damage: totalDamage,
-    })
+    }))
 
-    if (this.hp <= 0) this.die(damagerId)
+    if (this.hp <= 0) {
+      this.die(damagerId)
+    }
+
+    this.updatePlayerState()
   }
 
-  public incrementKills() {
+  public takeHeal (power: number) {
+    const healingHp = this.hp + power > this.className.hp ? this.className.hp : this.hp + power
+    this.hp = healingHp
+
+    this.updatePlayerState()
+  }
+
+  public incrementKills () {
     this.kills = this.kills + 1
+    this.updatePlayerState()
+  }
+
+  public updatePlayerState () {
+    this.emitter.emit('update-player-state', {
+      kills: this.kills,
+      dies: this.dies,
+      animation: this.animation,
+      command: this.command,
+      isAlive: this.isAlive,
+      position: this.position,
+      respawnTimeout: this.respawnTimeout,
+    })
+  }
+
+  public async getReward (reward: number) {
+    const data = await UserModel.findOne({ where: { id: this.user.id } })
+    const user = data.dataValues
+    
+    await UserModel.update({ money: user.money + reward }, { where: { id: this.user.id } })
   }
 }

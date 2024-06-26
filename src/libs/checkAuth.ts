@@ -4,6 +4,8 @@ import {
   UserModel,
 } from '../models/UserSchema'
 import { getGamseClassesFromUser } from '../data/game-classes/GameClass'
+import { getEveryDayQuests } from './getEveryDayQuests'
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config()
 
 interface ResponseCheckAuthInterface {
@@ -53,7 +55,7 @@ export const checkToken = async (
       return {
         message: 'Авторизация не подтверждена',
         ok: false,
-        status: 402,
+        status: 401,
       }
     }
 
@@ -78,6 +80,21 @@ export const checkToken = async (
     userOpenData.classes = classes
     userOpenData.userLockedData.classes = classes
 
+    const getQuests = () => {
+      return {
+        date: new Date().toLocaleString('ru').split(', ')[0],
+        quests: getEveryDayQuests()
+      }
+    }
+
+    if (userOpenData.userLockedData.everyDayQuests) {
+      if (userOpenData.userLockedData.everyDayQuests.date != new Date().toLocaleString('ru').split(', ')[0]) {
+        userOpenData.userLockedData.everyDayQuests = getQuests()
+      }
+    } else {
+      userOpenData.userLockedData.everyDayQuests = getQuests()
+    }
+
     return {
       message: 'Авторизация подтверждена',
       ok: true,
@@ -85,6 +102,10 @@ export const checkToken = async (
       status: 200,
     }
   } catch (e) {
-    console.warn('Ошибка при подтверждении токена', e)
+    return {
+      message: 'Unauthorized',
+      ok: false,
+      status: 401,
+    }
   }
 }

@@ -1,3 +1,4 @@
+import { OnPlayerMovingInterface } from './../entities/RoomEntity'
 import { checkToken } from '../libs/checkAuth'
 import { Service } from 'typedi'
 import { getTokenSromSocket } from '../libs/getTokenSromSocket'
@@ -15,7 +16,6 @@ import {
   OnMessage,
   ConnectedSocket,
   MessageBody,
-  EmitOnSuccess,
   OnConnect,
   OnDisconnect,
   SocketIO,
@@ -80,37 +80,76 @@ export class OnlineController {
       const userToken = getTokenSromSocket(socket)
       if (!userToken) return
 
-      const { user } = await checkToken(userToken)
+      const { user, ok } = await checkToken(userToken)
+
+      if (!ok) {
+        socket.emit('game-error', JSON.stringify({
+          status: 401,
+          message: 'Unauthorized'
+        }))
+        return
+      }
 
       socket.handshake.user = user
       socket.handshake.user.isAuth = true
 
-      this.connectedUsers.push({
+      this.connectedUsers = [...this.connectedUsers, {
         user,
         lastActionTime: Date.toString(),
         interface: 'menu',
         socket,
         id: user.id,
-      })
+      }]
 
       socket.join('main-menu')
       socket.handshake.roomHash = 'main-menu'
+
+      socket.emit('auntificated', JSON.stringify({
+        username: user.username,
+        money: user.money,
+        userHash: 'asdawdasdawd',
+      }))
+
+      socket.emit('redirect', JSON.stringify({
+        location: 'main-menu',
+        isAuth: true,
+        token: userToken,
+      }))
     } catch (e) {}
   }
 
   @OnDisconnect()
   async disconnect(@ConnectedSocket() socket) {
     const user = socket.handshake.user
+    const roomhash = socket.handshake.roomHash
+
+    if (roomhash) {
+      const room = this.activeGameRooms.find(el => el.hash == roomhash)
+
+      if (!room) return
+
+      room.disconnect(user.id)
+    }
 
     const userEntity = new UserEntity({ id: user.id, details: user })
     await userEntity.disconnect()
     this.connectedUsers = this.connectedUsers.filter((el) => el.id === user.id)
   }
 
-  @OnMessage('/save')
-  @EmitOnSuccess('new-message')
-  save(@ConnectedSocket() socket: any, @MessageBody() message: any) {
-    socket.broadcast.emit('new-message', message)
+  @OnMessage('send-message')
+  // @EmitOnSuccess('new-message')
+  async save(@ConnectedSocket() socket: any, @MessageBody() message: any) {
+    if (!socket.handshake.user?.isAuth) {
+      socket.emit('game-error', JSON.stringify({
+        status: 401,
+        message: 'Unauthorized'
+      }))
+      return
+    }
+
+    socket.broadcast.emit('new-message', JSON.stringify({
+      message,
+    }))
   }
 
   @OnMessage('choice-character')
@@ -135,7 +174,73 @@ export class OnlineController {
     playerRoom.onPlayerChoiceCharter(socket.handshake.user.id, playerClass)
   }
 
-  @OnMessage('/add-to-friends')
+  @OnMessage('take-damage')
+  takeDamage (@ConnectedSocket() socket: any, @MessageBody() stringMessage: any) {
+    const message = JSON.parse(stringMessage)
+    const roomHash = socket.handshake.roomHash
+    const user = socket.handshake.user
+
+    if (!message?.damage) return
+
+    const playerRoom = this.activeGameRooms.find(
+      (room) => room.hash === roomHash
+    )
+
+    playerRoom.onPlayerTakeDamage({ damage: message.damage, damagerId: message.damagerId, playerId: user.id })
+  }
+
+  @OnMessage('take-heal')
+  takeHeal (
+    @ConnectedSocket() socket: any,
+    @MessageBody() stringMessage: any
+  ) {
+    const message = JSON.parse(stringMessage)
+    const roomHash = socket.handshake.roomHash
+    const user = socket.handshake.user
+
+    if (!message.heal) return
+
+    const playerRoom = this.activeGameRooms.find(
+      (room) => room.hash === roomHash
+    )
+
+    playerRoom.onPlayerTakeHeal({ power: message.power, playerId: user.id })
+  }
+
+  @OnMessage('respawn')
+  respawn (@ConnectedSocket() socket: any) {
+    const roomHash = socket.handshake.roomHash
+    const user = socket.handshake.user
+
+    const playerRoom = this.activeGameRooms.find(
+      (room) => room.hash === roomHash
+    )
+
+    playerRoom.onRespawn(user.id)
+  }
+
+  @OnMessage('move')
+  playerMove (@ConnectedSocket() socket: any, @MessageBody() stringMessage: any) {
+    const message: OnPlayerMovingInterface = JSON.parse(stringMessage)
+    const roomHash = socket.handshake.roomHash
+    const user = socket.handshake.user
+
+    if (!message.animation || !message.position) return
+
+    const playerRoom = this.activeGameRooms.find(
+      (room) => room.hash === roomHash
+    )
+
+    if (!playerRoom) return
+
+    playerRoom.onPlayerMoving({
+      position: message.position,
+      playerId: user.id,
+      animation: message.animation,
+    })
+  }
+
+  @OnMessage('add-to-friends')
   async addToFriends(
     @ConnectedSocket() socket: any,
     @MessageBody() stringMessage: any
@@ -161,16 +266,14 @@ export class OnlineController {
     @SocketIO() io: any
   ) {
     const message: SearchRoomParamInterface = JSON.parse(stringMessage)
+
     if (socket.handshake.roomHash !== 'main-menu') {
       socket.emit(
         'game-error',
-        'Для поиска игры вы должны находиться в главном меню. Если вы видите это сообщение, находясь в нём, пожалуйста, перезагрузите игру'
+        JSON.stringify({
+          message: 'Для поиска игры вы должны находиться в главном меню. Если вы видите это сообщение, находясь в нём, пожалуйста, перезагрузите игру',
+        })
       )
-      return
-    }
-
-    if (!message.mode) {
-      socket.emit('game-error', 'Укажите режим, в котором хотите играть')
       return
     }
 
@@ -178,14 +281,12 @@ export class OnlineController {
       user: socket.handshake.user,
     }
 
-    const suitableRooms = this.activeGameRooms.filter((room) => {
-      if (room.isCanJoin && room.gameMode === message.mode) {
-        return room
-      }
-    })
+    const suitableRooms = message.mode
+      ? this.activeGameRooms.filter((room) => room.isCanJoin && room.gameMode === message.mode)
+      : this.activeGameRooms.filter(room => room.isCanJoin)
 
     if (!suitableRooms.length) {
-      const room = await this.createRoom(io, { gameMode: message.mode })
+      const room = await this.createRoom(io, { gameMode: message.mode || 'deathmatch' })
 
       socket.join(room.hash)
       socket.handshake.roomHash = room.hash
@@ -209,6 +310,20 @@ export class OnlineController {
     }, 0)
   }
 
+  @OnMessage('leave-room')
+  async leaveRoom (@ConnectedSocket() socket: any) {
+    const roomHash = socket.handshake.roomHash
+    const user = socket.handshake.user
+
+    const playerRoom = this.activeGameRooms.find(
+      (room) => room.hash === roomHash
+    )
+
+    if (!playerRoom) return
+
+    playerRoom.disconnect(user)
+  }
+
   async createRoom(io: any, roomData: CreateRoomparamInterface) {
     const createRoomHash = async () => {
       const hash = await createRandomString()
@@ -229,6 +344,10 @@ export class OnlineController {
       gameTime: 240,
       gameSocket: io,
       roomCreatedTime: Date().toString(),
+    })
+
+    room.emitter.on('end-game', () => {
+      this.activeGameRooms = this.activeGameRooms.filter((el => el.hash === room.hash))
     })
 
     this.activeGameRooms.push(room)

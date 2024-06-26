@@ -1,4 +1,3 @@
-import { connectionString } from '../data/DataBase'
 import {
   Table,
   Column,
@@ -6,15 +5,14 @@ import {
   DataType,
   ForeignKey,
   BelongsTo,
-  HasMany,
 } from 'sequelize-typescript'
 import { UsersFriendsModel } from './UserFriendsModel'
 import { OpenUserDataInterface } from './UserSchema'
 import { CoordsInterface } from '../data/GameMaps'
 import {
   GameClassInterface,
-  GameClasses,
-  PlayerClassType,
+  // GameClasses,
+  // PlayerClassType,
 } from '../data/game-classes/GameClass'
 
 export type UserRoleType = 'USER' | 'ADMIN' | 'ROOT' | 'MODERATOR'
@@ -29,7 +27,7 @@ export interface PlayerPositionInterface {
 
 export interface PlayerInterface {
   user: OpenUserDataInterface
-  class?: GameClassInterface
+  className?: GameClassInterface
   kills: number
   dies: number
   isAlive: boolean
@@ -40,6 +38,10 @@ export interface PlayerInterface {
 
 export const userGameClassData = {
   classes: [],
+  everyDayQuests: {
+    list: [],
+    date: new Date().toLocaleString('ru').split(', ')[0],
+  },
 }
 
 @Table

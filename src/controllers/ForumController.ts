@@ -273,8 +273,9 @@ export class ForumController {
   }
 
   @Get('/get-articles/:slug')
-  async getArticle(@Params() params, @Req() req) {
+  async getArticle(@Params() params, @Req() req, @QueryParams() query) {
     const { slug } = params
+    const locale = query.locale || 'ru-RU'
 
     const token = getToken(req)
     let User = null
@@ -286,6 +287,23 @@ export class ForumController {
 
     const article = await ForumArticleModel.findOne({
       where: { slug, isShow: true },
+    })
+
+    const themeId = article.dataValues.themeId
+    const theme = await ForumThemeModel.findOne({
+      where: { id: themeId },
+      attributes: [
+        [locale === 'ru-RU' ? 'titleRU' : 'titleEN', 'title'],
+        [locale === 'ru-RU' ? 'descriptionRU' : 'descriptionEN', 'description'],
+        'tags',
+        'avatar',
+        'id',
+      ],
+    })
+
+    const otherArticles = await ForumArticleModel.findAll({
+      where: { isShow: true, themeId },
+      limit: 5
     })
 
     if (!article || !article.dataValues.isShow)
@@ -370,6 +388,10 @@ export class ForumController {
           autor: autor.dataValues,
           comments: resComment,
         },
+        theme: theme.dataValues,
+        otherArticles: otherArticles
+          .map((el) => el.dataValues)
+          .filter(el => el.id !== article.dataValues.id),
       },
     }
   }

@@ -8,10 +8,11 @@ export interface UpdateUserFromAdminInterface extends CreateUserInterface {
 }
 
 export interface UserSocialHrefsInterface {
-  telegram: string
-  vk: string
-  whatsapp: string
-  discord: string
+  telegram?: string
+  vk?: string
+  whatsapp?: string
+  discord?: string
+  email?: string
 }
 
 export type AdminDeveloperRoleType = 'Художник' | 'Программист'
@@ -27,4 +28,10 @@ export interface AddAdminDataInterface {
   email: string
   avatar: string
   description: string
+}
+
+export interface GetUsersQueryInterface {
+  limit: number
+  offset: number
+  page?: number
 }

@@ -58,6 +58,12 @@ export interface OnPlayerMovingInterface {
 export interface OnPlayerTakeDamageInterface {
   playerId: number
   damage: number
+  damagerId: number
+}
+
+export interface OnPlayerTakeHealInterface {
+  power: number
+  playerId: number
 }
 
 export interface JoinToRoomUserParamInterface {
@@ -80,7 +86,7 @@ export class RommEntity {
   public players: RoomPlayerEnity[] = []
   public gameMode: GameModeInterface = null
   public gameStart: string = ''
-  public gameTime: number = 5
+  public gameTime: number = 250
   public notifications: RommNotificationsInterface[] = []
   public gameMap: GameMapInterface = null
   public isCanJoin: boolean = true
@@ -102,32 +108,27 @@ export class RommEntity {
     this.gameStatus = 'preparation'
     this.gameSocket = data.gameSocket.to(this.hash)
     this.emitter = new EventEmitter()
-
-    this.emitter.on('player-die', (data) => {
-      const killer = this.players.find((el) => el.user.id === data.killerId)
-
-      killer.incrementKills()
-    })
   }
 
-  decrementTime() {
+  private decrementTime() {
     this.gameTime = this.gameTime - 1
     this.gameSocket.emit('update', { time: this.gameTime })
 
     if (this.gameTime < 120 && this.isCanJoin) {
       this.isCanJoin = false
+      this.updateGameState()
     }
 
     if (this.gameTime === 0) this.endGame()
   }
 
-  public join(player: JoinToRoomUserParamInterface, userSocket: any) {
+  public async join(player: JoinToRoomUserParamInterface, userSocket: any) {
     if (this.players.length === this.maxPlayersCount) return
 
     const notification: RommNotificationsInterface = {
-      notificationHash: createRandomString(),
+      notificationHash: await createRandomString(),
       message: `Игрок ${player.user.username} присоединился к игре`,
-      time: Date.toString(),
+      time: new Date().toLocaleString('ru'),
       type: 'normal',
     }
 
@@ -140,19 +141,34 @@ export class RommEntity {
       user: player.user,
       gameMap: this.gameMap,
     })
-    this.players.push(gameRoomPlayer)
 
-    gameRoomPlayer.socket.emit('join-to-room', {
-      hash: this.hash,
-      status: this.gameStatus,
+    gameRoomPlayer.emitter.on('update-player-state', () => this.updateGameState())
+    gameRoomPlayer.emitter.on('player-die', (data) => {
+      const killer = this.players.find((el) => el.user.id === data.killerId)
+
+      if (!killer) return
+      killer.incrementKills()
     })
 
+    const players = this.players.filter(el => el.user.id !== player.user.id)
+    this.players = [...players, gameRoomPlayer]
+
+    gameRoomPlayer.socket.emit('join-to-room', JSON.stringify({
+      hash: this.hash,
+      status: this.gameStatus,
+      gameMode: this.gameMode,
+      isCanJoin: this.isCanJoin,
+      players: this.players.map(el => { return { ...el, socket: null } }),
+    }))
+
+    this.updateGameState()
     this.choiceCharter(gameRoomPlayer)
     if (this.players.length === this.maxPlayersCount) this.isCanJoin = false
   }
 
-  public disconnect(player: GameRoomPlayerInterface) {
-    this.players.filter((element) => element.user.id !== player.user.id)
+  public disconnect(playerId: number) {
+    const player = this.players.find(((element) => element.user.id !== playerId))
+    this.players = this.players.filter((element) => element.user.id !== playerId)
 
     player.socket.emit('redirect', 'main-menu')
 
@@ -162,6 +178,8 @@ export class RommEntity {
       type: 'normal',
       notificationHash: createRandomString(),
     })
+
+    this.updateGameState()
   }
 
   public choiceCharter(player: GameRoomPlayerInterface) {
@@ -181,13 +199,14 @@ export class RommEntity {
       return
 
     this.players[playerIndex].changeClass(gameClass)
-
+    
+    this.updateGameState()
     if (this.gameStatus === 'preparation') {
-      this.gameSocket.emit('update-players-class', {
+      this.gameSocket.emit('update-players-class', JSON.stringify({
         players: this.players.map((player) => {
           return { ...player, socket: null }
         }),
-      })
+      }))
 
       this.redirectPlayer(player, 'waiting-for-the-start')
       this.startGame()
@@ -222,15 +241,8 @@ export class RommEntity {
     )
 
     if (!player || !player.user.id) return
-    player.socket.emit('edit-game-data', {
-      gameMap: this.gameMap,
-      players: this.players,
-      gameStatus: this.gameStatus,
-      hash: this.hash,
-      gameMode: this.gameMode,
-      gameTime: this.gameTime,
-    })
 
+    this.updateGameState()
     this.onRespawn(playerId)
   }
 
@@ -238,59 +250,76 @@ export class RommEntity {
     player: GameRoomPlayerInterface,
     gameInterface: ConnectedUserInterfaceType
   ) {
-    player.socket.emit('redirect', gameInterface)
+    player.socket.emit('redirect', JSON.stringify({
+      location: gameInterface,
+      isAuth: true,
+      token: 'lajwdkhjagshkdbawkhydgasid',
+    }))
   }
 
-  onRespawn(playerId: number) {
+  public onRespawn(playerId: number) {
     this.players
       .find((connectedPlayer) => connectedPlayer.user.id === playerId)
       .respawn()
 
-    this.updatePlayersState()
+    this.updateGameState()
   }
 
   public addNotification(notification: RommNotificationsInterface) {
     this.notifications.push(notification)
+    this.gameSocket.emit('notification', JSON.stringify({
+      message: notification.message,
+      hash: notification.notificationHash,
+      time: new Date().toLocaleString('ru'),
+      type: notification.type,
+    }))
   }
 
-  public updatePlayersState() {
-    this.gameSocket.emit('update-position', {
-      players: this.players.map((player) => {
-        return { ...player, socket: null }
-      }),
-      teamsCount: {
-        blue: this.blueTeamPoints,
-        red: this.blueTeamPoints,
-      },
-    })
-  }
-
-  private onPlayerMoving(data: OnPlayerMovingInterface) {
+  public onPlayerMoving(data: OnPlayerMovingInterface) {
     if (this.gameStatus !== 'in-progress') return
 
     this.players
       .find((gamePlayer) => gamePlayer.user.id === data.playerId)
       .move({ position: data.position, animation: data.animation })
 
-    this.updatePlayersState()
+      // this.updateGameState()
   }
 
-  private onPlayerTakeDamage(data: OnPlayerTakeDamageInterface) {
+  public onPlayerTakeDamage(data: OnPlayerTakeDamageInterface) {
     const playerIndex: number = this.players.findIndex(
       (connectPlayer) => connectPlayer.user.id === data.playerId
     )
 
-    this.players[playerIndex].class.hp =
-      this.players[playerIndex].class.hp - data.damage
+    this.players[playerIndex].takeDamage(data.damage, data.damagerId)
+  }
+
+  public onPlayerTakeHeal (data: OnPlayerTakeHealInterface) {
+    const playerIndex: number = this.players.findIndex(
+      (connectPlayer) => connectPlayer.user.id === data.playerId
+    )
+
+    this.players[playerIndex].takeHeal(data.power)
   }
 
   public startGame() {
     try {
       if (this.players.length < this.minPlayerCount) {
-        this.gameSocket.emit(
-          'room-warning',
-          `Игра не может начаться, пока в ней не будет минимум ${this.minPlayerCount} игроков`
-        )
+        this.gameSocket.emit('room-warning',
+          JSON.stringify({
+            message: `Игра не может начаться, пока в ней не будет минимум ${this.minPlayerCount} игроков`
+        }))
+
+        return
+      }
+
+      const playerExists = this.players.filter(player => player.className !== null)
+
+      if (playerExists.length < this.minPlayerCount) {
+        this.gameSocket.emit('room-warning',
+          JSON.stringify({
+            message: `Ожидание готовности от игроков`
+        }))
+
         return
       }
 
@@ -300,14 +329,12 @@ export class RommEntity {
         this.players[playerIndex].position = playerPosition
       })
 
-      this.gameStart = Date.toString()
+      this.gameStart = new Date().toLocaleString('ru')
       this.gameStatus = 'in-progress'
 
       this.gameSocket.emit('update-game-status', 'game-start')
 
       setTimeout(() => {
-        this.gameSocket.emit('redirect', 'game')
-
         this.decrementTimeFunctionHash = setInterval(() => {
           this.decrementTime()
         }, 1000)
@@ -343,26 +370,84 @@ export class RommEntity {
       topPlayersForKills.forEach((player, ind) => {
         player.socket.emit('get-reward', playersReward[ind])
       })
+    } else {
+      const winersRewards = [50, 100, 120, 150, 200]
+      const loosersRewards = [20, 40, 60, 80, 100]
+
+      const winCommand = this.blueTeamPoints > this.redTeamPoints ? 'blue' : 'red'
+      const winners = this.players.filter(el => el.command == winCommand)
+      const loosers = this.players.filter(el => el.command != winCommand)
+
+      winners.forEach((player, index) => {
+        const reward = winersRewards[index]
+
+        player.socket.handshake.user.money = Number(player.socket.handshake.user.money) + reward || reward
+        player.socket.emit('get-reward', JSON.stringify({
+          money: reward
+        }))
+      })
+
+      loosers.forEach((player, index) => {
+        const reward = loosersRewards[index]
+
+        player.socket.handshake.user.money = Number(player.socket.handshake.user.money) + reward || reward
+        player.socket.emit('get-reward', JSON.stringify({
+          money: loosersRewards[index]
+        }))
+      })
     }
 
     this.isGameEnd = true
     this.gameSocket.emit('update-game-status', 'game-end')
     clearInterval(this.decrementTimeFunctionHash)
+    this.updateGameState()
 
     this.players.forEach((player) => {
-      player.socket.emit('redirect', 'menu')
+      player.socket.emit('redirect', JSON.stringify({
+        location: 'main-menu'
+      }))
       player.socket.join('main-menu')
       player.socket.handshake.roomHash = 'main-menu'
     })
+
+    setTimeout(() => this.emitter.emit('end-game'), 5000)
   }
 
   public getPlayersInRadius(data: GetPlayersInRadiusInterface) {
+    const playersInRadius = []
+
     this.players.forEach((player) => {
       const isPlayerInRadius = isObjectInRadius(
         data.position,
         player.position.coords,
         data.radius
       )
+
+      playersInRadius.push(isPlayerInRadius)
+    })
+
+    return playersInRadius
+  }
+
+  public updateGameState () {
+    const players = this.players.map(el => {
+      return { ...el, socket: null, username: el.user.username }
+    })
+
+    const data = JSON.stringify({
+      players,
+      status: this.gameStatus,
+      isCanJoin: this.isCanJoin,
+      blueTeamPoints: this.blueTeamPoints,
+      redTeamPoints: this.redTeamPoints,
+      gameMode: this.gameMode,
+      gameMap: this.gameMap,
+      time: this.gameTime,
+      gameMapName: this.gameMap.mapName,
+    })
+
+    this.players.forEach(player => {
+      player.socket.emit('update-game-state', data)
     })
   }
 }

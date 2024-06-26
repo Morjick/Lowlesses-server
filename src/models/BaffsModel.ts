@@ -4,8 +4,6 @@ import {
   Model,
   DataType,
   ForeignKey,
-  BelongsTo,
-  HasMany,
 } from 'sequelize-typescript'
 import { EquipmentModel } from './EquipmentModel'
 

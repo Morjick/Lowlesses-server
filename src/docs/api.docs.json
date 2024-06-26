@@ -30,6 +30,14 @@
         "responses": {}
       }
     },
+    "/get-developers": {
+      "get": {
+        "x-swagger-router-controller": "home",
+        "operationId": "index",
+        "tags": ["/user"],
+        "description": "Получить авторов"
+      }
+    },
     "/update-user": {
       "post": {
         "x-swagger-router-controller": "home",

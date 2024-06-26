@@ -3,8 +3,6 @@ import {
   Column,
   Model,
   DataType,
-  ForeignKey,
-  BelongsTo,
   HasMany,
 } from 'sequelize-typescript'
 import { BaffsModel, CreateBaffInterface } from './BaffsModel'

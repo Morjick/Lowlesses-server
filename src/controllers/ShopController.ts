@@ -89,7 +89,7 @@ export class ShopController {
         status: 200,
         message: 'Магазин успешно получен',
         body: {
-          shop,
+          shop: shop.map(el => el.dataValues),
         },
       }
     } catch (e) {

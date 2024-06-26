@@ -1,11 +1,3 @@
-// docs
-const swagger = require('swagger-ui-express')
-const ApiDocs = require('./docs/api.docs.json')
-
-// static
-const multer = require('multer')
-import * as path from 'path'
-
 // modules
 import { createExpressServer } from 'routing-controllers'
 import { UserController } from './controllers/UserController'
@@ -18,6 +10,15 @@ import { ShopController } from './controllers/ShopController'
 import { HeroesController } from './controllers/HeroesController'
 import { NewsController } from './controllers/NewsController'
 import { ForumController } from './controllers/ForumController'
+
+// docs
+const swagger = require('swagger-ui-express')
+const ApiDocs = require('./docs/api.docs.json')
+
+// static
+const multer = require('multer')
+import * as path from 'path'
+
 
 const init = async () => {
   const port = process.env.PORT
